@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+{% block title %}Game Validation Center · NER-Care{% endblock %}
+
+{% block content %}
+
+<style>
+.validation-wrap{max-width:1080px;margin:0 auto;padding:8px 0 25px}
+.validation-hero{padding:25px 28px;border:1px solid #dfe8f2;border-radius:22px;background:linear-gradient(135deg,#f8fbff,#f4f0ff);box-shadow:0 10px 28px rgba(30,65,90,.08)}
+.validation-badge{display:inline-block;padding:7px 11px;border-radius:999px;background:#efe7ff;color:#6741aa;font-size:10px;font-weight:900;letter-spacing:1.1px}
+.validation-hero h1{margin:12px 0 5px;color:#153452;font-size:clamp(30px,4vw,42px)}
+.validation-hero p{margin:0;color:#60758b;font-size:14px;line-height:1.55}
+.validation-safe{margin-top:16px;padding:11px 14px;border-radius:12px;background:#fff;border:1px solid #e7edf4;color:#53677b;font-size:12px}
+.validation-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:14px 0 20px}
+.v-stat{padding:15px 18px;border-radius:16px;background:#fff;border:1px solid #e3ebf3;box-shadow:0 7px 20px rgba(30,65,90,.06)}
+.v-stat span{display:block;color:#7b8b9d;font-size:9px;font-weight:900;letter-spacing:.8px;text-transform:uppercase}
+.v-stat strong{display:block;margin-top:6px;color:#153452;font-size:22px}
+.games-title{margin:0 0 10px;color:#153452;font-size:19px}
+.validation-games{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.v-game{display:flex;align-items:center;gap:14px;padding:17px 18px;border-radius:17px;background:#fff;border:1px solid #e1e9f1;text-decoration:none;box-shadow:0 7px 20px rgba(30,65,90,.06);transition:.2s}
+.v-game:hover{transform:translateY(-3px);box-shadow:0 12px 26px rgba(30,65,90,.11);border-color:#a9c9e8}
+.v-icon{width:45px;height:45px;display:grid;place-items:center;border-radius:13px;background:#eef6fc;font-size:22px;flex:0 0 auto}
+.v-copy{min-width:0}
+.v-copy h3{margin:0 0 4px;color:#153452;font-size:16px}
+.v-copy p{margin:0;color:#718398;font-size:11px;line-height:1.4}
+.v-button{margin-left:auto;padding:8px 11px;border-radius:999px;background:#f3f6fa;color:#41617e;font-size:9px;font-weight:900;white-space:nowrap}
+.validation-note{margin-top:16px;padding:12px 15px;border-radius:13px;background:#f7f9fc;color:#6a7c8e;font-size:11px;line-height:1.5}
+@media(max-width:720px){.validation-stats,.validation-games{grid-template-columns:1fr}.v-game{align-items:flex-start}.v-button{margin-top:2px}}
+</style>
+
+<div class="validation-wrap">
+
+    <section class="validation-hero">
+        <span class="validation-badge">CAREGIVER / DOCTOR VALIDATION</span>
+        <h1>🧪 Game Validation Center</h1>
+        <p>
+            A separate workspace for checking NER-Care's cognitive games,
+            performance capture, and AI analysis pipeline without mixing
+            validation activity with real patient records.
+        </p>
+
+        <div class="validation-safe">
+            🔒 <strong>Validation data is isolated.</strong>
+            Test sessions do not create patient game-history records or change patient difficulty.
+        </div>
+    </section>
+
+    <section class="validation-stats">
+        <div class="v-stat">
+            <span>Validation Sessions</span>
+            <strong>{{ validation_sessions }}</strong>
+        </div>
+        <div class="v-stat">
+            <span>Games Available</span>
+            <strong>4</strong>
+        </div>
+        <div class="v-stat">
+            <span>Mode</span>
+            <strong>Sandbox</strong>
+        </div>
+    </section>
+
+    <h2 class="games-title">Available Cognitive Games</h2>
+
+    <section class="validation-games">
+
+        <a class="v-game"
+           href="{{ url_for('caregiver_validation_game', caregiver_id=caregiver['id'], game_name='memory-match') }}">
+            <div class="v-icon">🧠</div>
+            <div class="v-copy">
+                <h3>Memory Match</h3>
+                <p>Memory + attention · pairs, score, time and errors</p>
+            </div>
+            <span class="v-button">TEST</span>
+        </a>
+
+        <a class="v-game"
+           href="{{ url_for('caregiver_validation_game', caregiver_id=caregiver['id'], game_name='pattern-recognition') }}">
+            <div class="v-icon">🎯</div>
+            <div class="v-copy">
+                <h3>Pattern Recognition</h3>
+                <p>Attention + visuospatial · sequence and response time</p>
+            </div>
+            <span class="v-button">TEST</span>
+        </a>
+
+        <a class="v-game"
+           href="{{ url_for('caregiver_validation_game', caregiver_id=caregiver['id'], game_name='daily-routine') }}">
+            <div class="v-icon">📅</div>
+            <div class="v-copy">
+                <h3>Daily Routine Recall</h3>
+                <p>Memory + executive function + orientation</p>
+            </div>
+            <span class="v-button">TEST</span>
+        </a>
+
+        <a class="v-game"
+           href="{{ url_for('caregiver_validation_game', caregiver_id=caregiver['id'], game_name='object-recognition') }}">
+            <div class="v-icon">🔎</div>
+            <div class="v-copy">
+                <h3>Object Recognition</h3>
+                <p>Memory + visuospatial · familiar-object recognition</p>
+            </div>
+            <span class="v-button">TEST</span>
+        </a>
+
+    </section>
+
+    <section class="validation-panels">
+
+    <a class="validation-panel"
+       href="{{ url_for('caregiver_validation_analysis', caregiver_id=caregiver['id']) }}">
+
+        <div>
+            <h2>📊 Validation Analysis</h2>
+            <p>
+                Review validation scores, accuracy, response time,
+                errors and game-wise test performance.
+            </p>
+        </div>
+
+        <span class="panel-button">OPEN ANALYSIS</span>
+
+    </a>
+
+    </section>
+
+    <section class="validation-panels">
+
+    <a class="validation-panel"
+       href="{{ url_for('caregiver_ai_validation', caregiver_id=caregiver['id']) }}">
+
+        <div>
+            <h2>🧠 AI Cognitive Validation Centre</h2>
+            <p>
+                Validate cognitive mapping, performance signals,
+                AI confidence and explainable insights using sandbox data.
+            </p>
+        </div>
+
+        <span class="panel-button">OPEN AI VALIDATION</span>
+
+    </a>
+
+    </section>
+
+    <div class="validation-note">
+        <strong>Step 11:</strong> These buttons now launch the real game templates
+        inside a temporary caregiver validation session. The score API recognizes
+        the sandbox session and does not persist the result into patient records.
+    </div>
+
+</div>
+
+{% endblock %}

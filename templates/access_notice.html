@@ -1,0 +1,274 @@
+{% extends "base.html" %}
+
+{% block title %}Access Notice · NER-Care{% endblock %}
+
+{% block content %}
+
+<style>
+    .access-page {
+        min-height: 72vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 20px 70px;
+    }
+
+    .access-card {
+        width: min(680px, 100%);
+        background: rgba(255, 255, 255, 0.97);
+        border: 1px solid rgba(30, 64, 175, 0.12);
+        border-radius: 24px;
+        padding: 48px 42px;
+        text-align: center;
+        box-shadow: 0 18px 50px rgba(15, 23, 42, 0.12);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .access-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 5px;
+        background: linear-gradient(90deg, #2563eb, #06b6d4);
+    }
+
+    .access-icon {
+        width: 82px;
+        height: 82px;
+        margin: 0 auto 22px;
+        border-radius: 22px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 40px;
+        background: #eff6ff;
+        border: 1px solid #dbeafe;
+    }
+
+    .access-badge {
+        display: inline-block;
+        padding: 7px 14px;
+        border-radius: 999px;
+        background: #eff6ff;
+        color: #1d4ed8;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 16px;
+    }
+
+    .access-card h1 {
+        margin: 0 0 14px;
+        font-size: clamp(26px, 4vw, 36px);
+        color: #0f172a;
+        line-height: 1.2;
+    }
+
+    .access-card .main-message {
+        margin: 0 auto 18px;
+        max-width: 560px;
+        font-size: 17px;
+        line-height: 1.7;
+        color: #475569;
+    }
+
+    .access-reason {
+        margin: 24px auto;
+        padding: 18px 20px;
+        max-width: 560px;
+        border-radius: 16px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        text-align: left;
+    }
+
+    .access-reason strong {
+        display: block;
+        margin-bottom: 7px;
+        color: #0f172a;
+        font-size: 14px;
+    }
+
+    .access-reason p {
+        margin: 0;
+        color: #64748b;
+        line-height: 1.6;
+        font-size: 14px;
+    }
+
+    .access-action {
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-top: 28px;
+    }
+
+    .access-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 150px;
+        padding: 13px 22px;
+        border-radius: 12px;
+        text-decoration: none;
+        font-weight: 700;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .access-button:hover {
+        transform: translateY(-2px);
+    }
+
+    .primary-access {
+        color: white;
+        background: #2563eb;
+        box-shadow: 0 8px 20px rgba(37, 99, 235, 0.22);
+    }
+
+    .secondary-access {
+        color: #1e293b;
+        background: #f1f5f9;
+        border: 1px solid #e2e8f0;
+    }
+
+    .access-footer {
+        margin-top: 25px;
+        font-size: 12px;
+        color: #94a3b8;
+    }
+
+    @media (max-width: 600px) {
+        .access-page {
+            padding: 25px 15px 50px;
+        }
+
+        .access-card {
+            padding: 38px 22px;
+            border-radius: 20px;
+        }
+
+        .access-card .main-message {
+            font-size: 15px;
+        }
+
+        .access-button {
+            width: 100%;
+        }
+    }
+</style>
+
+
+<div class="access-page">
+
+    <div class="access-card">
+
+        {% if requested_role == "patient" %}
+
+            <!-- CAREGIVER TRYING TO OPEN PATIENT MODE -->
+
+            <div class="access-icon">
+                🔒
+            </div>
+
+            <div class="access-badge">
+                Role-based access
+            </div>
+
+            <h1>Patient Mode Is Restricted</h1>
+
+            <p class="main-message">
+                Sorry, you are signed in as a <strong>Caregiver</strong>.
+                Patient games are designed to record performance against
+                an individual patient's profile.
+            </p>
+
+            <div class="access-reason">
+
+                <strong>Why is this restricted?</strong>
+
+                <p>
+                    Playing patient games from a caregiver account could
+                    associate test activity with the wrong patient record
+                    and affect cognitive analytics. Please use the
+                    <strong>Game Validation Center</strong> when testing games.
+                </p>
+
+            </div>
+
+            <div class="access-action">
+
+                <a href="{{ url_for('caregiver_home', caregiver_id=user['caregiver_id']) }}"
+                   class="access-button primary-access">
+                    🏠 Caregiver Workspace
+                </a>
+
+                <a href="{{ url_for('home') }}"
+                   class="access-button secondary-access">
+                    ← Home
+                </a>
+
+            </div>
+
+
+        {% else %}
+
+            <!-- PATIENT TRYING TO OPEN CAREGIVER MODE -->
+
+            <div class="access-icon">
+                🛡️
+            </div>
+
+            <div class="access-badge">
+                Protected workspace
+            </div>
+
+            <h1>Caregiver Access Is Restricted</h1>
+
+            <p class="main-message">
+                Sorry, you are signed in as a <strong>Patient</strong>.
+                The caregiver workspace is available only to authorized
+                caregivers and healthcare staff.
+            </p>
+
+            <div class="access-reason">
+
+                <strong>Your patient account is working normally.</strong>
+
+                <p>
+                    You can return to your Patient Dashboard and continue
+                    your personalized cognitive activities.
+                </p>
+
+            </div>
+
+            <div class="access-action">
+
+                <a href="{{ url_for('patient_dashboard', patient_id=user['patient_id']) }}"
+                   class="access-button primary-access">
+                    🧠 Patient Dashboard
+                </a>
+
+                <a href="{{ url_for('home') }}"
+                   class="access-button secondary-access">
+                    ← Home
+                </a>
+
+            </div>
+
+        {% endif %}
+
+
+        <div class="access-footer">
+            NER-Care · Secure role-based access
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,605 @@
+{% extends "base.html" %}
+
+{% block title %}Pattern Recognition{% endblock %}
+
+{% block content %}
+
+<h1>🔷 <span data-pattern-i18n="title">Pattern Recognition</span></h1>
+
+<p>
+    <span data-pattern-i18n="instructions">Watch the sequence, then repeat it.</span>
+    <span data-pattern-i18n="level">Level:</span>
+    <span>{{ patient['difficulty_level'] }}</span>
+</p>
+
+<div id="pattern-board" class="pattern-board"></div>
+
+<p id="status" class="result-msg" data-pattern-status-key="ready">
+    Get ready...
+</p>
+
+<a
+    href="{{ url_for('patient_dashboard', patient_id=patient['id']) }}"
+    class="back-link"
+    data-pattern-i18n="backDashboard"
+>
+    ⬅ Back to Dashboard
+</a>
+
+
+<script>
+
+const patientId = {{ patient['id'] }};
+const level = {{ patient['difficulty_level'] }};
+
+
+/* =========================================================
+   PATTERN RECOGNITION — PAGE TRANSLATION
+   Only visible UI/status text is translated.
+   Pattern indexes and game logic remain unchanged.
+   ========================================================= */
+
+const PATTERN_TRANSLATIONS = {
+    en: {
+        title: "Pattern Recognition",
+        instructions: "Watch the sequence, then repeat it.",
+        level: "Level:",
+        ready: "Get ready...",
+        watch: "Watch carefully...",
+        turn: "Your turn! Repeat the pattern.",
+        success: "🎉 Great job! Sequence complete.",
+        failed: "Nice try! You got {correct} of {total} correct.",
+        backDashboard: "⬅ Back to Dashboard"
+    },
+
+    hi: {
+        title: "पैटर्न पहचान",
+        instructions: "क्रम को ध्यान से देखें, फिर उसे दोहराएँ।",
+        level: "स्तर:",
+        ready: "तैयार हो जाइए...",
+        watch: "ध्यान से देखें...",
+        turn: "अब आपकी बारी! पैटर्न दोहराएँ।",
+        success: "🎉 बहुत बढ़िया! क्रम पूरा हो गया।",
+        failed: "अच्छी कोशिश! आपने {total} में से {correct} सही किया।",
+        backDashboard: "⬅ डैशबोर्ड पर वापस जाएँ"
+    },
+
+    as: {
+        title: "পেটাৰ্ণ চিনাক্তকৰণ",
+        instructions: "ক্ৰমটো মন দি চাওক, তাৰ পিছত পুনৰাবৃত্তি কৰক।",
+        level: "স্তৰ:",
+        ready: "প্ৰস্তুত হওক...",
+        watch: "ভালদৰে লক্ষ্য কৰক...",
+        turn: "এতিয়া আপোনাৰ পাল! পেটাৰ্ণটো পুনৰাবৃত্তি কৰক।",
+        success: "🎉 বৰ ভাল! ক্ৰমটো সম্পূৰ্ণ হ’ল।",
+        failed: "ভাল চেষ্টা! আপুনি {total}টাৰ ভিতৰত {correct}টা শুদ্ধ কৰিছে।",
+        backDashboard: "⬅ ডেশ্বব’ৰ্ডলৈ উভতি যাওক"
+    },
+
+    bn: {
+        title: "প্যাটার্ন শনাক্তকরণ",
+        instructions: "ক্রমটি দেখুন, তারপর সেটি পুনরাবৃত্তি করুন।",
+        level: "স্তর:",
+        ready: "প্রস্তুত হন...",
+        watch: "মনোযোগ দিয়ে দেখুন...",
+        turn: "এখন আপনার পালা! প্যাটার্নটি পুনরাবৃত্তি করুন।",
+        success: "🎉 দারুণ! ক্রমটি সম্পন্ন হয়েছে।",
+        failed: "ভালো চেষ্টা! আপনি {total}টির মধ্যে {correct}টি সঠিক করেছেন।",
+        backDashboard: "⬅ ড্যাশবোর্ডে ফিরে যান"
+    },
+
+    mni: {
+        title: "প্যাটার্ন চিনাক্তকরণ",
+        instructions: "ক্রম অসি য়েংউ, মখা তানা পুনরাবৃত্তি তৌ।",
+        level: "স্তর:",
+        ready: "হায়রিবা মতমদা শেম শারু...",
+        watch: "ফজনা য়েংউ...",
+        turn: "নহাক্কী পাল অদুং! প্যাটার্ন অদুং পুনরাবৃত্তি তৌ।",
+        success: "🎉 ফজনা তৌরে! ক্রম অদুং লোইশিনরে।",
+        failed: "ফজনা চেষ্টা তৌরে! {total} দগী {correct} শুদ্ধ তৌরে।",
+        backDashboard: "⬅ ড্যাশবোর্ডদা হন্না চঙশিনু"
+    },
+
+    kha: {
+        title: "Pynithuh ïa ka Pattern",
+        instructions: "Peit bha ïa ka jingbud, nangta bud biang ïa ka.",
+        level: "Kyrdan:",
+        ready: "Khreh noh...",
+        watch: "Peit bha...",
+        turn: "Ka dei ka por jong phi! Bud biang ïa ka pattern.",
+        success: "🎉 Bha shibun! La pyndep ïa ka jingbud.",
+        failed: "Ka jingpyrshang ka bha! Phi la leh hok {correct} na {total}.",
+        backDashboard: "⬅ Leitphai sha Dashboard"
+    },
+
+    lus: {
+        title: "Pattern Recognition",
+        instructions: "Sequence chu en la, chumi chhuah rawh.",
+        level: "Level:",
+        ready: "Inpeih rawh...",
+        watch: "Fiah takin en rawh...",
+        turn: "Tungei i chan! Pattern chu chumi chhuah rawh.",
+        success: "🎉 Tha! Sequence chu zawhfel a ni.",
+        failed: "I bei na a tha! {total} zinga {correct} i dik.",
+        backDashboard: "⬅ Dashboard-ah kir leh"
+    }
+};
+
+
+function getPatternLanguage() {
+    const saved = localStorage.getItem("nercare_language") || "en";
+
+    return PATTERN_TRANSLATIONS[saved]
+        ? saved
+        : "en";
+}
+
+
+function getPatternDictionary() {
+    return PATTERN_TRANSLATIONS[getPatternLanguage()];
+}
+
+
+function applyPatternLanguage() {
+    const dict = getPatternDictionary();
+
+    document.querySelectorAll("[data-pattern-i18n]").forEach(function (element) {
+        const key = element.getAttribute("data-pattern-i18n");
+
+        if (dict[key]) {
+            element.textContent = dict[key];
+        }
+    });
+
+    document.title = dict.title;
+
+    setPatternStatus("ready");
+}
+
+
+function setPatternStatus(key, values = {}) {
+    const status = document.getElementById("status");
+
+    if (!status) return;
+
+    const dict = getPatternDictionary();
+
+    let text = dict[key] || PATTERN_TRANSLATIONS.en[key] || "";
+
+    Object.keys(values).forEach(function (name) {
+        text = text.replace(
+            `{${name}}`,
+            values[name]
+        );
+    });
+
+    status.textContent = text;
+    status.setAttribute("data-pattern-status-key", key);
+}
+
+
+/* =========================================================
+   GAME CONFIGURATION
+   ========================================================= */
+
+const sequenceLength =
+    Math.min(
+        3 + (level - 1),
+        8
+    );
+
+
+const colors = [
+    "#e74c3c",
+    "#3498db",
+    "#2ecc71",
+    "#f1c40f"
+];
+
+
+const board =
+    document.getElementById(
+        "pattern-board"
+    );
+
+
+let sequence = [];
+
+let userStep = 0;
+
+let errors = 0;
+
+let gameFinished = false;
+
+const startTime = Date.now();
+
+
+/* =========================================================
+   CREATE COLOR TILES
+   ========================================================= */
+
+colors.forEach(
+    (color, i) => {
+
+        const tile =
+            document.createElement(
+                "div"
+            );
+
+        tile.className =
+            "pattern-tile";
+
+        tile.style.background =
+            color;
+
+        tile.dataset.index =
+            i;
+
+        tile.addEventListener(
+            "click",
+            () => {
+                handleTileClick(i);
+            }
+        );
+
+        board.appendChild(tile);
+
+    }
+);
+
+
+/* =========================================================
+   GENERATE RANDOM PATTERN
+   ========================================================= */
+
+for (
+    let i = 0;
+    i < sequenceLength;
+    i++
+) {
+
+    sequence.push(
+        Math.floor(
+            Math.random() *
+            colors.length
+        )
+    );
+
+}
+
+
+/* =========================================================
+   PLAY PATTERN
+   ========================================================= */
+
+function playSequence() {
+
+    const tiles =
+        document.querySelectorAll(
+            ".pattern-tile"
+        );
+
+    let i = 0;
+
+    setPatternStatus("watch");
+
+    const interval =
+        setInterval(
+            () => {
+
+                tiles.forEach(
+                    tile => {
+                        tile.classList.remove(
+                            "active"
+                        );
+                    }
+                );
+
+
+                if (i > 0) {
+
+                    tiles[
+                        sequence[i - 1]
+                    ].classList.remove(
+                        "active"
+                    );
+
+                }
+
+
+                if (
+                    i <
+                    sequence.length
+                ) {
+
+                    tiles[
+                        sequence[i]
+                    ].classList.add(
+                        "active"
+                    );
+
+
+                    setTimeout(
+                        () => {
+
+                            tiles[
+                                sequence[i]
+                            ].classList.remove(
+                                "active"
+                            );
+
+                        },
+                        500
+                    );
+
+
+                    i++;
+
+                }
+
+                else {
+
+                    clearInterval(
+                        interval
+                    );
+
+                    setPatternStatus(
+                        "turn"
+                    );
+
+                }
+
+            },
+            800
+        );
+
+}
+
+
+/* =========================================================
+   HANDLE USER TILE CLICK
+   ========================================================= */
+
+function handleTileClick(i) {
+
+    if (gameFinished) {
+        return;
+    }
+
+
+    const status =
+        document.getElementById(
+            "status"
+        );
+
+
+    /*
+     * Use the internal status key instead
+     * of checking translated visible text.
+     *
+     * This keeps the game working after
+     * language changes.
+     */
+
+    if (
+        status &&
+        status.getAttribute(
+            "data-pattern-status-key"
+        ) === "watch"
+    ) {
+        return;
+    }
+
+
+    if (
+        i ===
+        sequence[userStep]
+    ) {
+
+        userStep++;
+
+
+        if (
+            userStep ===
+            sequence.length
+        ) {
+
+            finishGame(true);
+
+        }
+
+    }
+
+    else {
+
+        errors++;
+
+        finishGame(false);
+
+    }
+
+}
+
+
+/* =========================================================
+   FINISH GAME + SEND STRUCTURED DATA
+   ========================================================= */
+
+function finishGame(success) {
+
+    if (gameFinished) {
+        return;
+    }
+
+
+    gameFinished = true;
+
+
+    const timeTaken =
+        (Date.now() - startTime) /
+        1000;
+
+
+    const expectedTime =
+        sequenceLength * 3;
+
+
+    const score =
+        success
+            ? sequenceLength
+            : userStep;
+
+
+    const maxScore =
+        sequenceLength;
+
+
+    const accuracy =
+        maxScore > 0
+            ? score / maxScore
+            : null;
+
+
+    const completionStatus =
+        success
+            ? "completed"
+            : "failed";
+
+
+    if (success) {
+
+        setPatternStatus(
+            "success"
+        );
+
+    }
+
+    else {
+
+        setPatternStatus(
+            "failed",
+            {
+                correct: userStep,
+                total: sequenceLength
+            }
+        );
+
+    }
+
+
+    fetch(
+        "/api/submit-score",
+        {
+            method: "POST",
+
+            headers: {
+                "Content-Type":
+                    "application/json"
+            },
+
+            body: JSON.stringify({
+
+                patient_id:
+                    patientId,
+
+                game_name:
+                    "pattern_recognition",
+
+                score:
+                    score,
+
+                max_score:
+                    maxScore,
+
+                accuracy:
+                    accuracy,
+
+                time_taken_seconds:
+                    timeTaken,
+
+                expected_time_seconds:
+                    expectedTime,
+
+                errors:
+                    errors,
+
+                hints_used:
+                    0,
+
+                completion_status:
+                    completionStatus,
+
+                domains: [
+                    "attention",
+                    "visuospatial"
+                ],
+
+                metrics: {
+
+                    sequence_length:
+                        sequenceLength,
+
+                    correct_steps:
+                        userStep,
+
+                    errors:
+                        errors,
+
+                    successful_completion:
+                        success
+
+                }
+
+            })
+
+        }
+    )
+    .then(
+        response =>
+            response.json()
+    )
+    .then(
+        data => {
+
+            console.log(
+                "NER-Care AI analytics updated:",
+                data
+            );
+
+        }
+    )
+    .catch(
+        error => {
+
+            console.error(
+                "Pattern Recognition score submission failed:",
+                error
+            );
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   START GAME
+   ========================================================= */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+        applyPatternLanguage();
+
+        setTimeout(
+            playSequence,
+            1000
+        );
+
+    }
+);
+
+</script>
+
+{% endblock %}

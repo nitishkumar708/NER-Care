@@ -1,0 +1,450 @@
+{% extends "base.html" %}
+
+{% block title %}Patient Profile · {{ patient['name'] }}{% endblock %}
+
+{% block content %}
+
+<style>
+.patient-profile-page {
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.patient-profile-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 28px;
+}
+
+.patient-profile-identity {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.patient-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #eaf6fb;
+    border: 1px solid #cfe8f2;
+    font-size: 30px;
+    flex-shrink: 0;
+}
+
+.patient-profile-identity h1 {
+    margin: 0;
+    font-size: 30px;
+}
+
+.patient-profile-identity p {
+    margin: 6px 0 0;
+    color: #61758a;
+}
+
+.patient-id-badge {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 5px 10px;
+    border-radius: 8px;
+    background: #f1f6f9;
+    color: #31556d;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.patient-profile-ai-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 13px 18px;
+    border-radius: 14px;
+    text-decoration: none;
+    color: #fff;
+    background: linear-gradient(135deg, #071a32, #0b3155, #10204f);
+    border: 1px solid rgba(0, 212, 255, .65);
+    box-shadow: 0 8px 24px rgba(7, 26, 50, .16);
+    font-weight: 800;
+    transition: transform .22s ease, box-shadow .22s ease;
+    white-space: nowrap;
+}
+
+.patient-profile-ai-button:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 12px 30px rgba(0, 212, 255, .22);
+}
+
+.profile-section {
+    margin-bottom: 24px;
+}
+
+.profile-section-title {
+    margin: 0 0 13px;
+    font-size: 19px;
+    color: #173b52;
+}
+
+.profile-card {
+    background: #fff;
+    border: 1px solid #e0e9ef;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 5px 18px rgba(30, 65, 90, .06);
+}
+
+.patient-info-grid,
+.overview-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+}
+
+.info-item,
+.overview-item {
+    padding: 14px;
+    border-radius: 12px;
+    background: #f7fafc;
+    border: 1px solid #e8eef2;
+}
+
+.info-label,
+.overview-label {
+    display: block;
+    color: #708397;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    margin-bottom: 6px;
+}
+
+.info-value,
+.overview-value {
+    color: #173b52;
+    font-size: 17px;
+    font-weight: 800;
+}
+
+.game-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.game-table th,
+.game-table td {
+    padding: 12px 10px;
+    text-align: left;
+    border-bottom: 1px solid #e8eef2;
+    font-size: 13px;
+}
+
+.game-table th {
+    color: #61758a;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+}
+
+.game-table tr:last-child td {
+    border-bottom: 0;
+}
+
+.empty-profile {
+    color: #718397;
+    margin: 0;
+}
+
+.history-list {
+    display: grid;
+    gap: 9px;
+}
+
+.history-row {
+    display: grid;
+    grid-template-columns: 1.5fr .7fr .8fr .8fr;
+    gap: 10px;
+    align-items: center;
+    padding: 11px 12px;
+    border-radius: 10px;
+    background: #f8fafc;
+    border: 1px solid #edf1f4;
+    font-size: 12px;
+}
+
+.history-row strong {
+    color: #24485d;
+}
+
+.history-muted {
+    color: #718397;
+}
+
+.profile-note {
+    padding: 13px 15px;
+    border-radius: 12px;
+    background: #f2f8fb;
+    border: 1px solid #dcecf3;
+    color: #506a7c;
+    font-size: 12px;
+    line-height: 1.55;
+}
+
+@media (max-width: 800px) {
+    .patient-profile-header {
+        flex-direction: column;
+    }
+
+    .patient-profile-ai-button {
+        width: 100%;
+        justify-content: center;
+        box-sizing: border-box;
+    }
+
+    .patient-info-grid,
+    .overview-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .history-row {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 500px) {
+    .patient-info-grid,
+    .overview-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .patient-profile-identity h1 {
+        font-size: 25px;
+    }
+}
+</style>
+
+<div class="patient-profile-page">
+
+    <div class="patient-profile-header">
+        <div class="patient-profile-identity">
+            <div class="patient-avatar">👤</div>
+            <div>
+                <h1>Caregiver Patient Profile</h1>
+                <p>{{ patient['name'] }}</p>
+                <span class="patient-id-badge">
+                    Patient ID: {{ patient['patient_code'] if patient['patient_code'] else 'Not assigned' }}
+                </span>
+            </div>
+        </div>
+
+        <a
+            href="{{ url_for('ai_analytics', patient_id=patient['id']) }}"
+            class="patient-profile-ai-button"
+        >
+            🧠 AI Cognitive Center →
+        </a>
+    </div>
+
+    <section class="profile-section">
+        <h2 class="profile-section-title">Patient Information</h2>
+
+        <div class="profile-card">
+            <div class="patient-info-grid">
+                <div class="info-item">
+                    <span class="info-label">Name</span>
+                    <span class="info-value">{{ patient['name'] }}</span>
+                </div>
+
+                <div class="info-item">
+                    <span class="info-label">Patient ID</span>
+                    <span class="info-value">
+                        {{ patient['patient_code'] if patient['patient_code'] else '—' }}
+                    </span>
+                </div>
+
+                <div class="info-item">
+                    <span class="info-label">Age</span>
+                    <span class="info-value">
+                        {{ patient['age'] if patient['age'] is not none else '—' }}
+                    </span>
+                </div>
+
+                <div class="info-item">
+                    <span class="info-label">Caregiver</span>
+                    <span class="info-value">{{ caregiver['name'] }}</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="profile-section">
+        <h2 class="profile-section-title">Cognitive Activity Overview</h2>
+
+        <div class="profile-card">
+            <div class="overview-grid">
+                <div class="overview-item">
+                    <span class="overview-label">Sessions</span>
+                    <span class="overview-value">{{ scores|length }}</span>
+                </div>
+
+                <div class="overview-item">
+                    <span class="overview-label">Latest Score</span>
+                    <span class="overview-value">
+                        {% if scores %}{{ scores[-1]['score'] }}{% else %}—{% endif %}
+                    </span>
+                </div>
+
+                <div class="overview-item">
+                    <span class="overview-label">Average Score</span>
+                    <span class="overview-value">
+                        {% if scores %}
+                            {{ "%.1f"|format((scores|sum(attribute='score')) / (scores|length)) }}
+                        {% else %}
+                            —
+                        {% endif %}
+                    </span>
+                </div>
+
+                <div class="overview-item">
+                    <span class="overview-label">Latest Accuracy</span>
+                    <span class="overview-value">
+                        {% if scores and scores[-1]['accuracy'] is not none %}
+                            {{ "%.1f"|format(scores[-1]['accuracy'] * 100 if scores[-1]['accuracy'] <= 1 else scores[-1]['accuracy']) }}%
+                        {% else %}
+                            —
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="profile-section">
+        <h2 class="profile-section-title">Game Performance</h2>
+
+        <div class="profile-card">
+            {% if scores %}
+                <div style="overflow-x:auto;">
+                    <table class="game-table">
+                        <thead>
+                            <tr>
+                                <th>Game</th>
+                                <th>Sessions</th>
+                                <th>Latest Score</th>
+                                <th>Latest Accuracy</th>
+                                <th>Response Time</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% set games = {} %}
+                            {% for score in scores %}
+                                {% set _ = games.update({score['game_name']: score}) %}
+                            {% endfor %}
+
+                            {% for game_name, latest in games.items() %}
+                            <tr>
+                                <td><strong>{{ game_name|replace('_', ' ')|title }}</strong></td>
+                                <td>
+                                    {{ scores|selectattr('game_name', 'equalto', game_name)|list|length }}
+                                </td>
+                                <td>{{ latest['score'] }}</td>
+                                <td>
+                                    {% if latest['accuracy'] is not none %}
+                                        {{ "%.1f"|format(latest['accuracy'] * 100 if latest['accuracy'] <= 1 else latest['accuracy']) }}%
+                                    {% else %}
+                                        —
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if latest['time_taken_seconds'] is not none %}
+                                        {{ "%.1f"|format(latest['time_taken_seconds']) }} sec
+                                    {% else %}
+                                        —
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="empty-profile">No cognitive game sessions recorded yet.</p>
+            {% endif %}
+        </div>
+    </section>
+
+    <section class="profile-section">
+        <h2 class="profile-section-title">Recent Performance History</h2>
+
+        <div class="profile-card">
+            {% if scores %}
+                <div class="history-list">
+                    {% for score in scores[-10:]|reverse %}
+                    <div class="history-row">
+                        <strong>{{ score['game_name']|replace('_', ' ')|title }}</strong>
+                        <span>Score: {{ score['score'] }}</span>
+                        <span class="history-muted">
+                            {% if score['accuracy'] is not none %}
+                                {{ "%.1f"|format(score['accuracy'] * 100 if score['accuracy'] <= 1 else score['accuracy']) }}% accuracy
+                            {% else %}
+                                Accuracy —
+                            {% endif %}
+                        </span>
+                        <span class="history-muted">
+                            {{ score['played_at'] }}
+                        </span>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="empty-profile">No performance history available yet.</p>
+            {% endif %}
+        </div>
+    </section>
+    <section class="profile-section">
+    <h2 class="profile-section-title">Reminders</h2>
+
+    <div class="profile-card">
+        {% if reminders %}
+            <div class="history-list">
+                {% for reminder in reminders %}
+                <div class="history-row">
+                    <strong>{{ reminder['title'] }}</strong>
+
+                    <span>
+                        {{ reminder['reminder_time'] }}
+                    </span>
+
+                    <span class="history-muted">
+                        {{ reminder['reminder_type'] or 'Reminder' }}
+                    </span>
+
+                    <span class="history-muted">
+                        {% if reminder['completed'] %}
+                            Completed
+                        {% else %}
+                            Pending
+                        {% endif %}
+                    </span>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="empty-profile">
+                No reminders scheduled for this patient.
+            </p>
+        {% endif %}
+    </div>
+</section>
+
+    <div class="profile-note">
+        This profile is for caregiver monitoring and review. AI-generated insights are available separately in the AI Cognitive Center and should not be treated as a medical diagnosis.
+    </div>
+
+</div>
+
+{% endblock %}

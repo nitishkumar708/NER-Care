@@ -1,0 +1,513 @@
+{% extends "base.html" %}
+
+{% block title %}Daily Routine Recall{% endblock %}
+
+{% block content %}
+
+<div class="game-page">
+
+    <h1>
+        🗓️ <span data-routine-i18n="title">Daily Routine Recall</span>
+    </h1>
+
+    <p class="game-intro" data-routine-i18n="intro">
+        Remember the usual order of everyday activities.
+    </p>
+
+    <p class="level-badge">
+        <span data-routine-i18n="level">Level:</span>
+        <span id="level">{{ patient['difficulty_level'] }}</span>
+    </p>
+
+    <div class="routine-card">
+
+        <h2 data-routine-i18n="questionTitle">
+            What usually comes next?
+        </h2>
+
+        <div id="sequence" class="routine-sequence"></div>
+
+        <p
+            id="question"
+            class="result-msg"
+            data-routine-i18n="think"
+        >
+            Think carefully...
+        </p>
+
+        <div id="options" class="routine-options"></div>
+
+        <p id="result" class="result-msg"></p>
+        <p id="progress" class="result-msg"></p>
+        <button id="next-btn" class="routine-option" style="display:none;margin:12px auto;"></button>
+
+    </div>
+
+    <a
+        href="{{ url_for('patient_dashboard', patient_id=patient['id']) }}"
+        class="back-link"
+        data-routine-i18n="backDashboard"
+    >
+        ⬅ Back to Dashboard
+    </a>
+
+</div>
+
+
+<script>
+
+const patientId = {{ patient['id'] }};
+const level = {{ patient['difficulty_level'] }};
+
+
+/* =========================================================
+   DAILY ROUTINE RECALL — PAGE TRANSLATION
+   The English activity values are kept internally so the
+   existing game logic and answer comparison remain safe.
+   Only their visible labels are translated.
+   ========================================================= */
+
+const ROUTINE_TRANSLATIONS = {
+
+    en: {
+        title: "Daily Routine Recall",
+        intro: "Remember the usual order of everyday activities.",
+        level: "Level:",
+        questionTitle: "What usually comes next?",
+        think: "Think carefully...",
+        backDashboard: "⬅ Back to Dashboard",
+
+        activities: {
+            "🌅 Wake Up": "🌅 Wake Up",
+            "🍳 Breakfast": "🍳 Breakfast",
+            "💊 Take Medicine": "💊 Take Medicine",
+            "🚶 Morning Walk": "🚶 Morning Walk",
+            "🍛 Lunch": "🍛 Lunch",
+            "😴 Afternoon Rest": "😴 Afternoon Rest",
+            "☕ Evening Tea": "☕ Evening Tea",
+            "🍲 Dinner": "🍲 Dinner"
+        },
+
+        correct: "🎉 Excellent! You remembered the routine correctly.",
+        wrong: "Good try! The correct answer was "
+    },
+
+    hi: {
+        title: "दैनिक दिनचर्या स्मरण",
+        intro: "रोज़ की गतिविधियों का सामान्य क्रम याद रखें।",
+        level: "स्तर:",
+        questionTitle: "आमतौर पर इसके बाद क्या आता है?",
+        think: "ध्यान से सोचें...",
+        backDashboard: "⬅ डैशबोर्ड पर वापस जाएँ",
+
+        activities: {
+            "🌅 Wake Up": "🌅 उठना",
+            "🍳 Breakfast": "🍳 नाश्ता",
+            "💊 Take Medicine": "💊 दवा लेना",
+            "🚶 Morning Walk": "🚶 सुबह की सैर",
+            "🍛 Lunch": "🍛 दोपहर का भोजन",
+            "😴 Afternoon Rest": "😴 दोपहर का आराम",
+            "☕ Evening Tea": "☕ शाम की चाय",
+            "🍲 Dinner": "🍲 रात का भोजन"
+        },
+
+        correct: "🎉 बहुत बढ़िया! आपको दिनचर्या सही याद रही।",
+        wrong: "अच्छी कोशिश! सही उत्तर था "
+    },
+
+    as: {
+        title: "দৈনন্দিন কাৰ্যসূচী স্মৰণ",
+        intro: "দৈনন্দিন কাম-কাজৰ সাধাৰণ ক্ৰমটো মনত ৰাখক।",
+        level: "স্তৰ:",
+        questionTitle: "সাধাৰণতে ইয়াৰ পিছত কি আহে?",
+        think: "ভালদৰে ভাবক...",
+        backDashboard: "⬅ ডেশ্বব’ৰ্ডলৈ উভতি যাওক",
+
+        activities: {
+            "🌅 Wake Up": "🌅 সাৰ পোৱা",
+            "🍳 Breakfast": "🍳 পুৱা আহাৰ",
+            "💊 Take Medicine": "💊 ঔষধ খোৱা",
+            "🚶 Morning Walk": "🚶 পুৱাৰ খোজকঢ়া",
+            "🍛 Lunch": "🍛 দুপৰীয়াৰ আহাৰ",
+            "😴 Afternoon Rest": "😴 দুপৰীয়াৰ বিশ্ৰাম",
+            "☕ Evening Tea": "☕ আবেলিৰ চাহ",
+            "🍲 Dinner": "🍲 ৰাতিৰ আহাৰ"
+        },
+
+        correct: "🎉 বৰ ভাল! আপুনি দৈনন্দিন কাৰ্যসূচীটো সঠিকভাৱে মনত ৰাখিছে।",
+        wrong: "ভাল চেষ্টা! সঠিক উত্তৰ আছিল "
+    },
+
+    bn: {
+        title: "দৈনন্দিন রুটিন স্মরণ",
+        intro: "প্রতিদিনের কাজগুলোর সাধারণ ক্রম মনে রাখুন।",
+        level: "স্তর:",
+        questionTitle: "সাধারণত এর পরে কী আসে?",
+        think: "ভালো করে ভাবুন...",
+        backDashboard: "⬅ ড্যাশবোর্ডে ফিরে যান",
+
+        activities: {
+            "🌅 Wake Up": "🌅 ঘুম থেকে ওঠা",
+            "🍳 Breakfast": "🍳 সকালের নাস্তা",
+            "💊 Take Medicine": "💊 ওষুধ খাওয়া",
+            "🚶 Morning Walk": "🚶 সকালের হাঁটা",
+            "🍛 Lunch": "🍛 দুপুরের খাবার",
+            "😴 Afternoon Rest": "😴 দুপুরের বিশ্রাম",
+            "☕ Evening Tea": "☕ বিকেলের চা",
+            "🍲 Dinner": "🍲 রাতের খাবার"
+        },
+
+        correct: "🎉 দারুণ! আপনি রুটিনটি সঠিকভাবে মনে রেখেছেন।",
+        wrong: "ভালো চেষ্টা! সঠিক উত্তর ছিল "
+    },
+
+    mni: {
+        title: "নুমিত-নুমিতকী কার্যসূচী স্মরণ",
+        intro: "নুমিতকী থৌরমশিংগী শিজিন্নরিবা মচাক অদু হৃৎপদা থম্মু।",
+        level: "স্তর:",
+        questionTitle: "মসিগী মতুংদা করিগুম্বা অমা লৈব্রা?",
+        think: "ফজনা শিংজিনজরো...",
+        backDashboard: "⬅ ড্যাশবোর্ডদা হন্না চঙশিনু",
+
+        activities: {
+            "🌅 Wake Up": "🌅 নুংশিবদগী হায়রাকপা",
+            "🍳 Breakfast": "🍳 চাহ-চাগী নুমিত থৌ",
+            "💊 Take Medicine": "💊 মেদিসিন লৌবা",
+            "🚶 Morning Walk": "🚶 নুংশিগী চঙবা",
+            "🍛 Lunch": "🍛 নুমিতকী মাংজিল",
+            "😴 Afternoon Rest": "😴 নুমিত অরাংবগী বিশ্রাম",
+            "☕ Evening Tea": "☕ হুইজিংগী চা",
+            "🍲 Dinner": "🍲 ইশিংগী মাংজিল"
+        },
+
+        correct: "🎉 ফজনা তৌরে! নহাক্না কার্যসূচী অদু শিংজিনরে।",
+        wrong: "ফজনা চেষ্টা তৌরে! শুদ্ধ উত্তর অদু "
+    },
+
+    kha: {
+        title: "Kynmaw ïa ka rukom sngi",
+        intro: "Kynmaw ïa ka rukom ba ju bud jong ki kam man ka sngi.",
+        level: "Kyrdan:",
+        questionTitle: "Kaei kaba ju wan hadien kane?",
+        think: "Pyrkhat bha...",
+        backDashboard: "⬅ Leitphai sha Dashboard",
+
+        activities: {
+            "🌅 Wake Up": "🌅 Kynmaw / Thaw",
+            "🍳 Breakfast": "🍳 Bam step",
+            "💊 Take Medicine": "💊 Bam dawai",
+            "🚶 Morning Walk": "🚶 ïaid mynstep",
+            "🍛 Lunch": "🍛 Bam sngi",
+            "😴 Afternoon Rest": "😴 Shongthait mynsngi",
+            "☕ Evening Tea": "☕ Sha janmiet",
+            "🍲 Dinner": "🍲 Bam miet"
+        },
+
+        correct: "🎉 Bha shibun! Phi la kynmaw hok ïa ka rukom sngi.",
+        wrong: "Ka jingpyrshang ka bha! Ka jubab kaba dei ka long "
+    },
+
+    lus: {
+        title: "Nitin nun hriat reng",
+        intro: "Nitin ni thil tihte zawmdan chu hriat reng rawh.",
+        level: "Level:",
+        questionTitle: "He thil nge a lo thleng thin?",
+        think: "Ngaihtuah takin...",
+        backDashboard: "⬅ Dashboard-ah kir leh",
+
+        activities: {
+            "🌅 Wake Up": "🌅 Thaw",
+            "🍳 Breakfast": "🍳 Zana chaw ei",
+            "💊 Take Medicine": "💊 Damdawi ei",
+            "🚶 Morning Walk": "🚶 Zing ni kal",
+            "🍛 Lunch": "🍛 Chawhnu chaw ei",
+            "😴 Afternoon Rest": "😴 Chawhnu chawlh",
+            "☕ Evening Tea": "☕ Zan tea",
+            "🍲 Dinner": "🍲 Zanriah"
+        },
+
+        correct: "🎉 Tha! Nitin nun hriat reng chu i hriat reng tha.",
+        wrong: "Bei na a tha! Chhanna dik chu "
+    }
+};
+
+
+function getRoutineLanguage() {
+
+    const saved =
+        localStorage.getItem("nercare_language") || "en";
+
+    return ROUTINE_TRANSLATIONS[saved]
+        ? saved
+        : "en";
+}
+
+
+function getRoutineDictionary() {
+
+    return ROUTINE_TRANSLATIONS[
+        getRoutineLanguage()
+    ];
+}
+
+
+function translateActivity(activity) {
+
+    const dict =
+        getRoutineDictionary();
+
+    return (
+        dict.activities[activity] ||
+        ROUTINE_TRANSLATIONS.en.activities[activity] ||
+        activity
+    );
+}
+
+
+function applyRoutineLanguage() {
+
+    const dict =
+        getRoutineDictionary();
+
+    document
+        .querySelectorAll("[data-routine-i18n]")
+        .forEach(function (element) {
+
+            const key =
+                element.getAttribute(
+                    "data-routine-i18n"
+                );
+
+            if (dict[key]) {
+                element.textContent =
+                    dict[key];
+            }
+
+        });
+
+    document.title =
+        dict.title;
+}
+
+
+/* =========================================================
+   EVERYDAY ROUTINE
+   Internal English values are intentionally preserved.
+   ========================================================= */
+
+const activities = [
+
+    "🌅 Wake Up",
+    "🍳 Breakfast",
+    "💊 Take Medicine",
+    "🚶 Morning Walk",
+    "🍛 Lunch",
+    "😴 Afternoon Rest",
+    "☕ Evening Tea",
+    "🍲 Dinner"
+
+];
+
+
+/* =========================================================
+   DIFFICULTY
+   Level 1 → 4 activities
+   Level 2 → 5 activities
+   Level 3 → 6 activities
+   Level 4 → 7 activities
+   Level 5 → 8 activities
+   ========================================================= */
+
+
+const TOTAL_QUESTIONS = 5;
+
+/* Extra labels for the round system. Languages without a verified
+   translation fall back to English. */
+const ROUND_TEXT = {
+    en:  { question: "Question", next: "Next ➜", done: "Round complete! Score:", again: "Play again", saving: "Saving your result..." },
+    hi:  { question: "प्रश्न", next: "अगला ➜", done: "राउंड पूरा! स्कोर:", again: "फिर खेलें", saving: "परिणाम सहेजा जा रहा है..." },
+    as:  { question: "প্ৰশ্ন", next: "পৰৱৰ্তী ➜", done: "ৰাউণ্ড সম্পূৰ্ণ! স্ক'ৰ:", again: "পুনৰ খেলক", saving: "ফলাফল সাঁচি থকা হৈছে..." },
+    bn:  { question: "প্রশ্ন", next: "পরবর্তী ➜", done: "রাউন্ড সম্পূর্ণ! স্কোর:", again: "আবার খেলুন", saving: "ফলাফল সংরক্ষণ হচ্ছে..." }
+};
+
+function roundText(key) {
+    const lang = getRoutineLanguage();
+    return (ROUND_TEXT[lang] || ROUND_TEXT.en)[key] || ROUND_TEXT.en[key];
+}
+
+let questionNumber = 0;
+let correctCount = 0;
+let roundStartedAt = Date.now();
+let questionAnswered = false;
+let roundSubmitted = false;
+
+let correctAnswer = null;
+let lastAnswer = null;
+
+/* =========================================================
+   BUILD ONE QUESTION
+   Level controls how many activities are shown (2..L-1).
+   The starting point moves, so the 5 questions differ.
+   ========================================================= */
+function loadQuestion() {
+
+    questionNumber++;
+    questionAnswered = false;
+
+    document.getElementById("progress").textContent =
+        roundText("question") + " " + questionNumber + " / " + TOTAL_QUESTIONS;
+    document.getElementById("result").textContent = "";
+    document.getElementById("next-btn").style.display = "none";
+
+    const sequenceElement = document.getElementById("sequence");
+    const optionsElement = document.getElementById("options");
+    sequenceElement.innerHTML = "";
+    optionsElement.innerHTML = "";
+
+    const routineLength = Math.min(4 + (level - 1), activities.length);
+    const maxShown = routineLength - 1;
+    const minShown = Math.max(2, maxShown - 2);
+
+    let shown, start, answer, guard = 0;
+    do {
+        shown = minShown + Math.floor(Math.random() * (maxShown - minShown + 1));
+        start = Math.floor(Math.random() * (activities.length - shown));
+        answer = activities[start + shown];
+        guard++;
+    } while (answer === lastAnswer && guard < 20);
+
+    lastAnswer = answer;
+    correctAnswer = answer;
+    const visibleActivities = activities.slice(start, start + shown);
+
+    visibleActivities.forEach((activity, index) => {
+        const item = document.createElement("div");
+        item.className = "routine-item";
+        item.textContent = translateActivity(activity);
+        sequenceElement.appendChild(item);
+        if (index < visibleActivities.length - 1) {
+            const arrow = document.createElement("span");
+            arrow.className = "routine-arrow";
+            arrow.textContent = "→";
+            sequenceElement.appendChild(arrow);
+        }
+    });
+
+    let pool = activities.filter(a => a !== correctAnswer && !visibleActivities.includes(a));
+    if (pool.length < 2) {
+        pool = activities.filter(a => a !== correctAnswer);
+    }
+    pool.sort(() => Math.random() - 0.5);
+
+    const options = [correctAnswer, pool[0], pool[1]];
+    options.sort(() => Math.random() - 0.5);
+
+    options.forEach(option => {
+        const button = document.createElement("button");
+        button.className = "routine-option";
+        button.textContent = translateActivity(option);
+        button.dataset.activity = option;
+        button.onclick = () => checkAnswer(option, button);
+        optionsElement.appendChild(button);
+    });
+}
+
+
+/* =========================================================
+   CHECK ANSWER
+   ========================================================= */
+function checkAnswer(answer, button) {
+
+    if (questionAnswered) { return; }
+    questionAnswered = true;
+
+    const allButtons = document.querySelectorAll("#options .routine-option");
+    allButtons.forEach(btn => { btn.disabled = true; });
+
+    const dict = getRoutineDictionary();
+    const resultElement = document.getElementById("result");
+
+    if (answer === correctAnswer) {
+        correctCount++;
+        button.classList.add("correct");
+        resultElement.textContent = dict.correct;
+    } else {
+        button.classList.add("wrong");
+        resultElement.textContent = dict.wrong + translateActivity(correctAnswer);
+        allButtons.forEach(btn => {
+            if (btn.dataset.activity === correctAnswer) {
+                btn.classList.add("correct");
+            }
+        });
+    }
+
+    const nextButton = document.getElementById("next-btn");
+    nextButton.style.display = "block";
+
+    if (questionNumber < TOTAL_QUESTIONS) {
+        nextButton.textContent = roundText("next");
+        nextButton.onclick = loadQuestion;
+    } else {
+        finishRound();
+    }
+}
+
+
+/* =========================================================
+   END OF ROUND: SEND ONE RESULT TO THE ADAPTIVE ENGINE
+   One round (5 questions) = one session in the analytics.
+   ========================================================= */
+function finishRound() {
+
+    const nextButton = document.getElementById("next-btn");
+    nextButton.textContent = roundText("again");
+    nextButton.onclick = () => window.location.reload();
+
+    document.getElementById("progress").textContent =
+        roundText("done") + " " + correctCount + " / " + TOTAL_QUESTIONS;
+
+    if (roundSubmitted) { return; }
+    roundSubmitted = true;
+
+    const secondsTaken = Math.max(1, (Date.now() - roundStartedAt) / 1000);
+
+    fetch("/api/submit-score", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            patient_id: patientId,
+            game_name: "daily_routine",
+            score: correctCount,
+            max_score: TOTAL_QUESTIONS,
+            accuracy: correctCount / TOTAL_QUESTIONS,
+            errors: TOTAL_QUESTIONS - correctCount,
+            hints_used: 0,
+            completion_status: "completed",
+            time_taken_seconds: secondsTaken,
+            expected_time_seconds: TOTAL_QUESTIONS * 10,
+            domains: ["memory", "executive_function", "orientation"],
+            metrics: { questions: TOTAL_QUESTIONS, level: level }
+        })
+    }).catch(function (error) {
+        console.warn("Score could not be saved:", error);
+    });
+}
+
+
+/* =========================================================
+   APPLY LANGUAGE
+   ========================================================= */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+        applyRoutineLanguage();
+        loadQuestion();
+
+    }
+);
+
+</script>
+
+{% endblock %}

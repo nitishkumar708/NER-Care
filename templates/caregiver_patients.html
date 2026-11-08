@@ -1,0 +1,363 @@
+{% extends "base.html" %}
+
+{% block title %}My Patients · NER-Care{% endblock %}
+
+{% block content %}
+
+<div class="patient-management-page">
+
+    <div class="pm-header">
+        <div>
+            <div class="pm-kicker">CAREGIVER WORKSPACE</div>
+            <h1>My Patients</h1>
+            <p>Manage your connected patients, invitation access, and patient records from one place.</p>
+        </div>
+
+        <a
+            href="{{ url_for('caregiver_dashboard', caregiver_id=caregiver['id']) }}"
+            class="pm-back-button"
+        >
+            ← Dashboard
+        </a>
+    </div>
+
+    <section class="pm-connection-grid">
+
+        <div class="pm-connection-card">
+            <div class="pm-card-icon">🔐</div>
+            <div class="pm-card-body">
+                <span class="pm-card-label">YOUR CAREGIVER CODE</span>
+                <div class="pm-code-row">
+                    <strong id="caregiverCode">{{ caregiver['caregiver_code'] }}</strong>
+                    <button type="button" onclick="copyText('caregiverCode', this)">Copy</button>
+                </div>
+                <p>Patients can enter this code when creating their own NER-Care account.</p>
+            </div>
+        </div>
+
+        <div class="pm-connection-card pm-invite-card">
+            <div class="pm-card-icon">🔗</div>
+            <div class="pm-card-body">
+                <span class="pm-card-label">PATIENT INVITATION</span>
+                <strong>Send a secure invitation link</strong>
+                <p>Create a 7-day invitation for a patient or family member.</p>
+
+                <button type="button" class="pm-primary-button" id="generateInviteButton" onclick="generateInvite()">
+                    Generate Invitation Link
+                </button>
+
+                <div id="inviteResult" class="pm-invite-result" hidden>
+                    <div class="pm-invite-url" id="inviteUrl"></div>
+                    <div class="pm-invite-actions">
+                        <button type="button" onclick="copyInvite()">Copy Link</button>
+                    </div>
+                    <small id="inviteExpiry"></small>
+                </div>
+            </div>
+        </div>
+
+    </section>
+
+    <section class="pm-patients-section">
+        <div class="pm-section-header">
+            <div>
+                <span class="pm-card-label">CONNECTED PATIENTS</span>
+                <h2>Patient Directory</h2>
+                <p>Search by patient name, unique Patient ID, or account email.</p>
+            </div>
+            <div class="pm-count">
+                <strong>{{ patients|length }}</strong>
+                <span>{% if patients|length == 1 %}patient{% else %}patients{% endif %}</span>
+            </div>
+        </div>
+
+        <form method="GET" class="pm-search">
+            <span>⌕</span>
+            <input type="search" name="q" value="{{ search }}"
+                   placeholder="Search name, Patient ID, or email..."
+                   autocomplete="off">
+            <button type="submit">Search</button>
+            {% if search %}
+                <a href="{{ url_for('caregiver_patients', caregiver_id=caregiver['id']) }}">Clear</a>
+            {% endif %}
+        </form>
+
+        {% if patients %}
+        <div class="pm-patient-list">
+            {% for item in patients %}
+            {% set p = item.patient %}
+            <article class="pm-patient-card">
+                <div class="pm-patient-main">
+                    <div class="pm-patient-avatar">👤</div>
+                    <div class="pm-patient-identity">
+                        <div class="pm-name-row">
+                            <h3>{{ p['name'] }}</h3>
+                            {% if item.last_score %}
+                                <span class="pm-active-badge"><i></i> Active</span>
+                            {% else %}
+                                <span class="pm-new-badge">New</span>
+                            {% endif %}
+                        </div>
+                        <div class="pm-patient-meta">
+                            <span><b>Patient ID</b> {{ p['patient_code'] }}</span>
+                            {% if p['age'] %}<span><b>Age</b> {{ p['age'] }}</span>{% endif %}
+                            {% if p['account_email'] %}<span class="pm-email"><b>Email</b> {{ p['account_email'] }}</span>{% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                {% if item.alert and item.alert.has_alert %}
+                    <div class="pm-ai-alert">
+                        <span>🔔</span>
+                        <div>
+                            <strong>{{ item.alert.status }}</strong>
+                            <p>{{ item.alert.message }}</p>
+                        </div>
+                    </div>
+                {% endif %}
+
+                <div class="pm-patient-metrics">
+                    <div class="pm-metric"><span>SESSIONS</span><strong>{{ item.session_count }}</strong></div>
+                    <div class="pm-metric">
+                        <span>LATEST SCORE</span>
+                        <strong>
+                            {% if item.last_score and item.last_score['score'] is not none %}
+                                {{ item.last_score['score'] }}{% if item.last_score['max_score'] %}<small>/ {{ item.last_score['max_score'] }}</small>{% endif %}
+                            {% else %}—{% endif %}
+                        </strong>
+                    </div>
+                    <div class="pm-metric">
+                        <span>LAST ACTIVE</span>
+                        <strong>{% if item.last_score %}{{ item.last_score['played_at'][:10] }}{% else %}Not yet{% endif %}</strong>
+                    </div>
+                </div>
+
+                <div class="pm-patient-actions">
+                    <a href="{{ url_for('caregiver_patient_view', caregiver_id=caregiver['id'], patient_id=p['id']) }}"
+                       class="pm-action secondary"><span>View Patient</span><b>→</b></a>
+                    <a href="{{ url_for('ai_analytics', patient_id=p['id']) }}"
+                       class="pm-action ai"><span>🧠 AI Center</span><b>→</b></a>
+
+                   <div class="patient-more-menu">
+                        <button type="button"
+                                class="pm-action more-btn"
+                                onclick="togglePatientMenu(this)"
+                                aria-label="More patient options">
+                            <span>⋮</span>
+                        </button>
+
+                        <div class="patient-menu-dropdown">
+                            <form method="POST"
+                                action="{{ url_for('caregiver_remove_patient', caregiver_id=caregiver['id'], patient_id=p['id']) }}"
+                                onsubmit="return confirm('Remove this patient from your patient list? Their records will be preserved.');">
+
+                                <button type="submit" class="patient-menu-remove">
+                                    🗑 Remove Patient
+                                </button>
+
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="pm-empty">
+            <div class="pm-empty-icon">👥</div>
+            {% if search %}
+                <h3>No matching patient found</h3>
+                <p>Try the patient's name, Patient ID, or account email.</p>
+            {% else %}
+                <h3>No patients connected yet</h3>
+                <p>Share your caregiver code or generate an invitation link to connect your first patient.</p>
+            {% endif %}
+        </div>
+        {% endif %}
+    </section>
+
+    <div class="pm-safety-note">
+        <span>🔒</span>
+        <div>
+            <strong>Private patient access</strong>
+            <p>Only patients connected to this caregiver account are displayed in this workspace.</p>
+        </div>
+    </div>
+
+</div>
+
+<style>
+.patient-management-page{max-width:1120px;margin:0 auto;padding:8px 0 40px}
+.pm-header{display:flex;align-items:flex-end;justify-content:space-between;gap:25px;margin-bottom:28px}
+.pm-kicker{font-size:10px;font-weight:900;letter-spacing:1.7px;color:#087c99;margin-bottom:7px}
+.pm-header h1{margin:0;color:#17324a;font-size:34px}
+.pm-header p{margin:8px 0 0;color:#607586;font-size:14px}
+.pm-back-button{padding:10px 15px;border:1px solid #d7e4ec;border-radius:12px;text-decoration:none;color:#31546a;background:#fff;font-weight:700;transition:.2s ease}
+.pm-back-button:hover{transform:translateY(-2px);background:#f2f9fb;box-shadow:0 7px 18px rgba(25,65,90,.08)}
+.pm-connection-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:28px}
+.pm-connection-card{display:flex;gap:16px;padding:22px;border:1px solid #dce8ef;border-radius:18px;background:#fff;box-shadow:0 10px 30px rgba(25,65,90,.07)}
+.pm-card-icon{width:48px;height:48px;border-radius:14px;background:#edf8fb;display:flex;align-items:center;justify-content:center;font-size:23px;flex-shrink:0}
+.pm-card-body{min-width:0;flex:1}.pm-card-label{display:block;font-size:9px;font-weight:900;letter-spacing:1.4px;color:#6c8291;margin-bottom:6px}
+.pm-card-body>strong{display:block;color:#17324a;font-size:16px}.pm-card-body p{margin:7px 0 0;color:#718493;font-size:12px;line-height:1.5}
+.pm-code-row{display:flex;align-items:center;gap:10px}.pm-code-row strong{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:18px;letter-spacing:1px;color:#075f78}
+.pm-code-row button,.pm-invite-actions button{border:0;border-radius:9px;padding:7px 10px;background:#eaf6fa;color:#075f78;font-weight:800;cursor:pointer;transition:.2s ease}
+.pm-code-row button:hover,.pm-invite-actions button:hover{transform:translateY(-1px);background:#dff1f6}
+.pm-primary-button{margin-top:13px;border:0;border-radius:11px;padding:11px 14px;background:#087c99;color:#fff;font-weight:800;cursor:pointer;transition:.2s ease}
+.pm-primary-button:hover{transform:translateY(-2px) scale(1.01);box-shadow:0 8px 18px rgba(8,124,153,.2)}
+.pm-invite-result{margin-top:12px;padding:10px;border-radius:11px;background:#f4fafc;border:1px solid #dceef3}
+.pm-invite-url{font-size:11px;color:#31546a;word-break:break-all;line-height:1.45}.pm-invite-actions{margin-top:7px}.pm-invite-result small{display:block;margin-top:7px;color:#788c99}
+.pm-patients-section{padding:23px;border:1px solid #dce8ef;border-radius:20px;background:#fff;box-shadow:0 10px 30px rgba(25,65,90,.06)}
+.pm-section-header{display:flex;align-items:flex-start;justify-content:space-between;gap:20px}
+.pm-section-header h2{margin:3px 0 5px;color:#17324a;font-size:23px}.pm-section-header p{margin:0;color:#718493;font-size:12px}
+.pm-count{min-width:76px;text-align:center;padding:9px 12px;border-radius:12px;background:#f1f8fa}.pm-count strong{display:block;color:#075f78;font-size:20px}.pm-count span{font-size:9px;color:#718493;text-transform:uppercase;letter-spacing:1px}
+.pm-search{display:flex;align-items:center;gap:9px;margin:20px 0;padding:7px;border:1px solid #dce7ee;border-radius:13px;background:#f9fcfd;transition:.2s ease}.pm-search:focus-within{border-color:#8bcbd9;box-shadow:0 0 0 4px rgba(8,124,153,.08)}
+.pm-search>span{padding-left:8px;font-size:22px;color:#66818f}.pm-search input{flex:1;min-width:0;border:0;outline:0;background:transparent;padding:9px 4px;font:inherit;color:#29485c}
+.pm-search button{border:0;border-radius:9px;padding:9px 14px;background:#17324a;color:#fff;font-weight:800;cursor:pointer;transition:.2s ease}.pm-search button:hover{transform:translateY(-1px);background:#0d2a42}
+.pm-search a{padding:8px 9px;color:#6c8291;text-decoration:none;font-size:12px}
+.pm-patient-list{display:grid;gap:12px}
+.pm-patient-card{display:grid;grid-template-columns:minmax(260px,1.5fr) minmax(270px,1.1fr) auto;align-items:center;gap:20px;padding:17px;border:1px solid #e1ebf0;border-radius:16px;background:linear-gradient(180deg,#fff 0%,#fcfeff 100%);transition:.2s ease}
+.pm-patient-card:hover{transform:translateY(-2px);border-color:#bcdde6;box-shadow:0 12px 28px rgba(25,65,90,.09)}
+.pm-patient-main{display:flex;align-items:center;gap:13px;min-width:0}.pm-patient-avatar{width:50px;height:50px;border-radius:14px;background:#f1f7f9;display:flex;align-items:center;justify-content:center;font-size:23px;flex-shrink:0}
+.pm-patient-identity{min-width:0}.pm-name-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.pm-patient-identity h3{margin:0 0 6px;color:#17324a;font-size:16px}
+.pm-active-badge,.pm-new-badge{display:inline-flex;align-items:center;gap:5px;margin-top:-6px;padding:4px 7px;border-radius:999px;font-size:8px;font-weight:900;letter-spacing:.7px;text-transform:uppercase}
+.pm-active-badge{color:#18704c;background:#edf9f3;border:1px solid #cdeedc}.pm-active-badge i{width:5px;height:5px;border-radius:50%;background:#28a86b}.pm-new-badge{color:#80621a;background:#fff8df;border:1px solid #f0df9d}
+.pm-patient-meta{display:flex;flex-wrap:wrap;gap:6px 13px;color:#718493;font-size:10px}.pm-patient-meta b{color:#496576}.pm-email{overflow:hidden;text-overflow:ellipsis}
+.pm-patient-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.pm-metric{min-width:0;padding:10px 9px;border-radius:11px;background:#f7fafb;border:1px solid #e8f0f3}
+.pm-metric span{display:block;margin-bottom:4px;font-size:7px;font-weight:900;letter-spacing:1px;color:#8295a1}.pm-metric strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;color:#31546a}.pm-metric strong small{font-size:9px;color:#8295a1;font-weight:700}
+.pm-patient-actions{display:flex;gap:7px;justify-content:flex-end}.pm-action{display:inline-flex;align-items:center;gap:7px;padding:10px 12px;border-radius:10px;text-decoration:none;font-size:10px;font-weight:800;white-space:nowrap;transition:.2s ease}.pm-action b{font-size:14px;transition:.2s ease}
+.pm-action.secondary{border:1px solid #d8e5eb;color:#31546a;background:#fff}.pm-action.ai{background:#0b2944;color:#fff;border:1px solid #55ddff;box-shadow:0 5px 14px rgba(11,41,68,.12)}
+.pm-action:hover{transform:translateY(-2px)}.pm-action:hover b{transform:translateX(3px)}.pm-action.secondary:hover{background:#f5fafc;box-shadow:0 7px 16px rgba(25,65,90,.07)}.pm-action.ai:hover{box-shadow:0 8px 20px rgba(11,41,68,.22)}
+.pm-empty{text-align:center;padding:55px 20px}.pm-empty-icon{font-size:40px}.pm-empty h3{margin:10px 0 5px;color:#29485c}.pm-empty p{margin:0;color:#718493;font-size:13px}
+.pm-safety-note{display:flex;gap:11px;align-items:flex-start;margin-top:16px;padding:13px 15px;border:1px solid #dcecf1;border-radius:13px;background:#f7fcfd}.pm-safety-note>span{font-size:17px}.pm-safety-note strong{font-size:11px;color:#31546a}.pm-safety-note p{margin:3px 0 0;font-size:10px;color:#718493}
+@media(max-width:1050px){.pm-patient-card{grid-template-columns:1fr;gap:14px}.pm-patient-actions{justify-content:flex-start}}
+@media(max-width:900px){.pm-connection-grid{grid-template-columns:1fr}}
+@media(max-width:620px){.pm-header{align-items:flex-start;flex-direction:column}.pm-header h1{font-size:28px}.pm-patients-section{padding:17px}.pm-section-header{flex-direction:column}.pm-search{flex-wrap:wrap}.pm-search input{min-width:150px}.pm-patient-metrics{grid-template-columns:1fr 1fr}.pm-patient-actions{flex-direction:column}.pm-action{justify-content:center}}
+</style>
+
+<script>
+function copyText(id, button) {
+    const value = document.getElementById(id)?.innerText?.trim();
+    if (!value) return;
+
+    navigator.clipboard.writeText(value).then(() => {
+        const original = button.innerText;
+        button.innerText = "Copied";
+        setTimeout(() => button.innerText = original, 1400);
+    });
+}
+
+let generatedInviteUrl = "";
+
+function generateInvite() {
+    const button = document.getElementById("generateInviteButton");
+    const result = document.getElementById("inviteResult");
+
+    button.disabled = true;
+    button.innerText = "Generating...";
+
+    fetch("{{ url_for('caregiver_invite') }}", {
+        method: "POST",
+        headers: {"Accept": "application/json"}
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status !== "ok") {
+            throw new Error(data.message || "Unable to generate invitation.");
+        }
+
+        generatedInviteUrl = data.invite_url || "";
+
+        document.getElementById("inviteUrl").innerText = generatedInviteUrl;
+        document.getElementById("inviteExpiry").innerText =
+            "Valid until: " + new Date(data.expires_at).toLocaleString();
+
+        result.hidden = false;
+        button.innerText = "Generate New Link";
+    })
+    .catch(error => {
+        alert(error.message);
+        button.innerText = "Try Again";
+    })
+    .finally(() => {
+        button.disabled = false;
+    });
+}
+
+function copyInvite() {
+    if (!generatedInviteUrl) return;
+
+    navigator.clipboard.writeText(generatedInviteUrl).then(() => {
+        const buttons = document.querySelectorAll(".pm-invite-actions button");
+        if (buttons[0]) {
+            const original = buttons[0].innerText;
+            buttons[0].innerText = "Copied";
+            setTimeout(() => buttons[0].innerText = original, 1400);
+        }
+    });
+}
+</script>
+
+<script>
+function togglePatientMenu(button) {
+    const menu = button.parentElement.querySelector(".patient-menu-dropdown");
+
+    document.querySelectorAll(".patient-menu-dropdown").forEach(item => {
+        if (item !== menu) {
+            item.style.display = "none";
+        }
+    });
+
+    menu.style.display =
+        menu.style.display === "block" ? "none" : "block";
+}
+
+document.addEventListener("click", function(event) {
+    if (!event.target.closest(".patient-more-menu")) {
+        document.querySelectorAll(".patient-menu-dropdown").forEach(menu => {
+            menu.style.display = "none";
+        });
+    }
+});
+</script>
+
+<style>
+.patient-more-menu {
+    position: relative;
+    display: inline-block;
+}
+
+.patient-menu-dropdown {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: calc(100% + 6px);
+    min-width: 180px;
+    background: #fff;
+    border: 1px solid #dce5eb;
+    border-radius: 10px;
+    padding: 5px;
+    box-shadow: 0 10px 25px rgba(20, 50, 70, 0.15);
+    z-index: 100;
+}
+
+.patient-menu-dropdown form {
+    margin: 0;
+}
+
+.patient-menu-remove {
+    width: 100%;
+    border: 0;
+    background: transparent;
+    padding: 10px 12px;
+    text-align: left;
+    border-radius: 7px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.patient-menu-remove:hover {
+    background: #fff1f1;
+}
+</style>
+
+{% endblock %}

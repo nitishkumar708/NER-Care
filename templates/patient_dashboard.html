@@ -1,0 +1,234 @@
+{% extends "base.html" %}
+
+{% block title %}Patient Dashboard{% endblock %}
+
+{% block content %}
+
+<div class="patient-dashboard-page">
+
+    <h1>
+        <span data-patient-i18n="hello">Hello</span>, {{ patient['name'] }} 👋
+    </h1>
+
+    <p class="level-badge">
+        <span data-patient-i18n="currentLevel">Current Level:</span>
+        {{ patient['difficulty_level'] }}
+    </p>
+
+    <h2>🎮 <span data-patient-i18n="todaysGames">Today's Games</span></h2>
+
+    <div class="big-button-grid">
+
+        <a href="{{ url_for('memory_match', patient_id=patient['id']) }}"
+           class="big-button game-btn">
+            🃏 <span data-patient-i18n="memoryMatch">Memory Match</span>
+        </a>
+
+        <a href="{{ url_for('pattern_recognition', patient_id=patient['id']) }}"
+           class="big-button game-btn">
+            🔷 <span data-patient-i18n="patternRecognition">Pattern Recognition</span>
+        </a>
+
+        <a href="{{ url_for('daily_routine', patient_id=patient['id']) }}"
+           class="big-button game-btn">
+            🗓️ <span data-patient-i18n="dailyRoutine">Daily Routine Recall</span>
+        </a>
+
+        <a href="{{ url_for('object_recognition', patient_id=patient['id']) }}"
+           class="big-button game-btn">
+            🔎 <span data-patient-i18n="objectRecognition">Object Recognition</span>
+        </a>
+
+    </div>
+
+    <h2>⏰ <span data-patient-i18n="reminders">Reminders</span></h2>
+
+    <div class="reminder-list">
+
+        {% if reminders|length == 0 %}
+            <p data-patient-i18n="noPendingReminders">No pending reminders. 🎉</p>
+        {% endif %}
+
+        {% for r in reminders %}
+        <div class="reminder-card" id="reminder-{{ r['id'] }}">
+            <span class="reminder-category">{{ r['category'] }}</span>
+            <span class="reminder-title">{{ r['title'] }}</span>
+            <span class="reminder-time">{{ r['reminder_time'] }}</span>
+
+            <button
+                onclick="markDone({{ r['id'] }})"
+                class="done-btn"
+                type="button"
+                data-patient-i18n="done"
+            >
+                ✔ Done
+            </button>
+        </div>
+        {% endfor %}
+
+    </div>
+
+</div>
+
+
+<script>
+/* =========================================================
+   NER-Care — PATIENT DASHBOARD LANGUAGE
+   Uses the language selected in base.html.
+   Game links, patient data and reminder data are untouched.
+   ========================================================= */
+
+const PATIENT_DASHBOARD_TRANSLATIONS = {
+    en: {
+        hello: "Hello",
+        currentLevel: "Current Level:",
+        todaysGames: "Today's Games",
+        memoryMatch: "Memory Match",
+        patternRecognition: "Pattern Recognition",
+        dailyRoutine: "Daily Routine Recall",
+        objectRecognition: "Object Recognition",
+        reminders: "Reminders",
+        noPendingReminders: "No pending reminders. 🎉",
+        done: "✔ Done",
+        pageTitle: "Patient Dashboard"
+    },
+
+    hi: {
+        hello: "नमस्ते",
+        currentLevel: "वर्तमान स्तर:",
+        todaysGames: "आज के खेल",
+        memoryMatch: "मेमोरी मैच",
+        patternRecognition: "पैटर्न पहचान",
+        dailyRoutine: "दैनिक दिनचर्या स्मरण",
+        objectRecognition: "वस्तु पहचान",
+        reminders: "रिमाइंडर",
+        noPendingReminders: "कोई लंबित रिमाइंडर नहीं है। 🎉",
+        done: "✔ पूरा हुआ",
+        pageTitle: "मरीज डैशबोर्ड"
+    },
+
+    as: {
+        hello: "নমস্কাৰ",
+        currentLevel: "বৰ্তমান স্তৰ:",
+        todaysGames: "আজিৰ খেল",
+        memoryMatch: "মেমৰি মেচ",
+        patternRecognition: "পেটাৰ্ণ চিনাক্তকৰণ",
+        dailyRoutine: "দৈনন্দিন কাৰ্যসূচী স্মৰণ",
+        objectRecognition: "বস্তু চিনাক্তকৰণ",
+        reminders: "ৰিমাইণ্ডাৰ",
+        noPendingReminders: "কোনো বাকী ৰিমাইণ্ডাৰ নাই। 🎉",
+        done: "✔ সম্পূৰ্ণ",
+        pageTitle: "ৰোগীৰ ডেশ্বব’ৰ্ড"
+    },
+
+    bn: {
+        hello: "নমস্কার",
+        currentLevel: "বর্তমান স্তর:",
+        todaysGames: "আজকের খেলা",
+        memoryMatch: "মেমরি ম্যাচ",
+        patternRecognition: "প্যাটার্ন শনাক্তকরণ",
+        dailyRoutine: "দৈনন্দিন রুটিন স্মরণ",
+        objectRecognition: "বস্তু শনাক্তকরণ",
+        reminders: "রিমাইন্ডার",
+        noPendingReminders: "কোনো বকেয়া রিমাইন্ডার নেই। 🎉",
+        done: "✔ সম্পন্ন",
+        pageTitle: "রোগী ড্যাশবোর্ড"
+    },
+
+    mni: {
+        hello: "নমস্কার",
+        currentLevel: "বর্তমান স্তর:",
+        todaysGames: "নুমিৎ অসিগী খেল",
+        memoryMatch: "মেমরি ম্যাচ",
+        patternRecognition: "প্যাটার্ন চিনাক্তকরণ",
+        dailyRoutine: "নুমিত-নুমিতকী কার্যসূচী",
+        objectRecognition: "বস্তু চিনাক্তকরণ",
+        reminders: "রিমাইন্ডার",
+        noPendingReminders: "কোনো বাকি রিমাইন্ডার নাই। 🎉",
+        done: "✔ লোইশিনরে",
+        pageTitle: "রোগীগী ড্যাশবোর্ড"
+    },
+
+    kha: {
+        hello: "Khublei",
+        currentLevel: "Ka kyrdan mynta:",
+        todaysGames: "Ki jingïalehkai mynta ka sngi",
+        memoryMatch: "Memory Match",
+        patternRecognition: "Pattern Recognition",
+        dailyRoutine: "Kynmaw ïa ka rukom sngi",
+        objectRecognition: "Pynithuh ïa ka jingthaw",
+        reminders: "Ki jingpynkynmaw",
+        noPendingReminders: "Ym don jingpynkynmaw ba dang sah. 🎉",
+        done: "✔ La dep",
+        pageTitle: "Patient Dashboard"
+    },
+
+    lus: {
+        hello: "Chibai",
+        currentLevel: "Level tun:",
+        todaysGames: "Nimin ni game",
+        memoryMatch: "Hriatna Inbelh",
+        patternRecognition: "Pattern Hriatna",
+        dailyRoutine: "Nitin nun hriat reng",
+        objectRecognition: "Thil hriat chhuah",
+        reminders: "Reminder",
+        noPendingReminders: "Reminder dang awm lo. 🎉",
+        done: "✔ Tih fel",
+        pageTitle: "Patient Dashboard"
+    }
+};
+
+
+function applyPatientDashboardLanguage() {
+    const language = localStorage.getItem("nercare_language") || "en";
+    const dict =
+        PATIENT_DASHBOARD_TRANSLATIONS[language] ||
+        PATIENT_DASHBOARD_TRANSLATIONS.en;
+
+    document.querySelectorAll("[data-patient-i18n]").forEach(function (element) {
+        const key = element.getAttribute("data-patient-i18n");
+
+        if (dict[key]) {
+            element.textContent = dict[key];
+        }
+    });
+
+    document.title = dict.pageTitle;
+}
+
+
+function markDone(id) {
+    fetch(`/api/reminders/${id}/done`, {
+        method: "POST"
+    })
+    .then(() => {
+        const reminder = document.getElementById(`reminder-${id}`);
+
+        if (reminder) {
+            reminder.remove();
+        }
+
+        const reminderList = document.querySelector(".reminder-list");
+
+        if (reminderList && !reminderList.querySelector(".reminder-card")) {
+            const language = localStorage.getItem("nercare_language") || "en";
+            const dict =
+                PATIENT_DASHBOARD_TRANSLATIONS[language] ||
+                PATIENT_DASHBOARD_TRANSLATIONS.en;
+
+            reminderList.innerHTML =
+                `<p data-patient-i18n="noPendingReminders">${dict.noPendingReminders}</p>`;
+        }
+    })
+    .catch(function () {
+        /* Keep the existing UI behavior simple and safe. */
+    });
+}
+
+
+document.addEventListener("DOMContentLoaded", function () {
+    applyPatientDashboardLanguage();
+});
+</script>
+
+{% endblock %}

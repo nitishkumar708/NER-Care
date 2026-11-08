@@ -1,0 +1,507 @@
+{% extends "base.html" %}
+
+{% block title %}Memory Match{% endblock %}
+
+{% block content %}
+
+<h1>🃏 <span data-memory-i18n="title">Memory Match</span></h1>
+
+<p>
+    <span data-memory-i18n="instructions">Find matching pairs.</span>
+    <span data-memory-i18n="level">Level:</span>
+    <span id="level">{{ patient['difficulty_level'] }}</span>
+</p>
+
+<div id="board" class="memory-board"></div>
+
+<p id="result" class="result-msg"></p>
+
+<a
+    href="{{ url_for('patient_dashboard', patient_id=patient['id']) }}"
+    class="back-link"
+    data-memory-i18n="backDashboard"
+>
+    ⬅ Back to Dashboard
+</a>
+
+
+<script>
+
+const patientId = {{ patient['id'] }};
+const level = {{ patient['difficulty_level'] }};
+
+
+/* =========================================================
+   MEMORY MATCH — PAGE TRANSLATION
+   Only visible UI text is translated.
+   Emoji values and game logic remain unchanged.
+   ========================================================= */
+
+const MEMORY_TRANSLATIONS = {
+    en: {
+        title: "Memory Match",
+        instructions: "Find matching pairs.",
+        level: "Level:",
+        backDashboard: "⬅ Back to Dashboard",
+        wellDone: "Well done! Completed in"
+    },
+
+    hi: {
+        title: "मेमोरी मैच",
+        instructions: "समान जोड़ियों को खोजें।",
+        level: "स्तर:",
+        backDashboard: "⬅ डैशबोर्ड पर वापस जाएँ",
+        wellDone: "बहुत बढ़िया! पूरा हुआ"
+    },
+
+    as: {
+        title: "মেমৰি মেচ",
+        instructions: "মিল থকা যোৰ বিচাৰক।",
+        level: "স্তৰ:",
+        backDashboard: "⬅ ডেশ্বব’ৰ্ডলৈ উভতি যাওক",
+        wellDone: "বৰ ভাল! সম্পূৰ্ণ হ’ল"
+    },
+
+    bn: {
+        title: "মেমরি ম্যাচ",
+        instructions: "মিল থাকা জোড়া খুঁজুন।",
+        level: "স্তর:",
+        backDashboard: "⬅ ড্যাশবোর্ডে ফিরে যান",
+        wellDone: "দারুণ! সম্পন্ন হয়েছে"
+    },
+
+    mni: {
+        title: "মেমরি ম্যাচ",
+        instructions: "মিল তাদবা জোড়া খুঁজৌ।",
+        level: "স্তর:",
+        backDashboard: "⬅ ড্যাশবোর্ডদা হন্না চঙশিনু",
+        wellDone: "ফজনা! লোইশিনরে"
+    },
+
+    kha: {
+        title: "Memory Match",
+        instructions: "Pynïasoh ïa ki ar tylli kiba ïahap.",
+        level: "Kyrdan:",
+        backDashboard: "⬅ Leitphai sha Dashboard",
+        wellDone: "Bha! La dep"
+    },
+
+    lus: {
+        title: "Memory Match",
+        instructions: "Inang thil pahnihte zawn rawh.",
+        level: "Level:",
+        backDashboard: "⬅ Dashboard-ah kir leh",
+        wellDone: "Tha! I zo"
+    }
+};
+
+
+function getMemoryLanguage() {
+    const saved = localStorage.getItem("nercare_language") || "en";
+
+    return MEMORY_TRANSLATIONS[saved]
+        ? saved
+        : "en";
+}
+
+
+function applyMemoryLanguage() {
+    const language = getMemoryLanguage();
+    const dict = MEMORY_TRANSLATIONS[language];
+
+    document.querySelectorAll("[data-memory-i18n]").forEach(function (element) {
+        const key = element.getAttribute("data-memory-i18n");
+
+        if (dict[key]) {
+            element.textContent = dict[key];
+        }
+    });
+
+    document.title = dict.title;
+}
+
+
+/* =========================================================
+   GAME CONFIGURATION
+   ========================================================= */
+
+// Level 1 → 3 pairs
+// Level 5 → 7 pairs
+
+const numPairs = Math.min(
+    3 + (level - 1),
+    7
+);
+
+const emojiPool = [
+    "🐘",
+    "🌸",
+    "🍎",
+    "🐄",
+    "🌾",
+    "🎋",
+    "🪔",
+    "🏔️",
+    "🥥",
+    "🦋",
+    "🐟",
+    "🌿"
+];
+
+const chosen = emojiPool.slice(
+    0,
+    numPairs
+);
+
+let cards = [
+    ...chosen,
+    ...chosen
+];
+
+cards.sort(
+    () => Math.random() - 0.5
+);
+
+
+/* =========================================================
+   GAME STATE
+   ========================================================= */
+
+let firstCard = null;
+let secondCard = null;
+
+let lock = false;
+
+let matches = 0;
+
+let attempts = 0;
+
+let errors = 0;
+
+const startTime = Date.now();
+
+
+/* =========================================================
+   BOARD
+   ========================================================= */
+
+const board =
+    document.getElementById("board");
+
+board.style.gridTemplateColumns =
+    `repeat(${Math.ceil(Math.sqrt(cards.length))}, 1fr)`;
+
+
+cards.forEach((emoji, i) => {
+
+    const card =
+        document.createElement("div");
+
+    card.className =
+        "memory-card";
+
+    /*
+     * IMPORTANT:
+     * Keep the actual emoji in data-emoji.
+     * The global language system must never
+     * translate this value because game
+     * matching depends on it.
+     */
+    card.dataset.emoji =
+        emoji;
+
+    card.dataset.index =
+        i;
+
+    card.textContent =
+        "❓";
+
+    card.addEventListener(
+        "click",
+        () => flip(card)
+    );
+
+    board.appendChild(card);
+
+});
+
+
+/* =========================================================
+   CARD FLIP
+   ========================================================= */
+
+function flip(card) {
+
+    if (
+        lock ||
+        card.classList.contains("matched") ||
+        card === firstCard
+    ) {
+        return;
+    }
+
+    card.textContent =
+        card.dataset.emoji;
+
+
+    if (!firstCard) {
+
+        firstCard = card;
+
+        return;
+    }
+
+
+    secondCard = card;
+
+    lock = true;
+
+    attempts++;
+
+
+    /* =====================================================
+       CORRECT MATCH
+       ===================================================== */
+
+    if (
+        firstCard.dataset.emoji ===
+        secondCard.dataset.emoji
+    ) {
+
+        firstCard.classList.add(
+            "matched"
+        );
+
+        secondCard.classList.add(
+            "matched"
+        );
+
+        matches++;
+
+        resetTurn();
+
+
+        if (matches === numPairs) {
+
+            finishGame();
+
+        }
+
+    }
+
+
+    /* =====================================================
+       WRONG MATCH
+       ===================================================== */
+
+    else {
+
+        errors++;
+
+        setTimeout(() => {
+
+            firstCard.textContent =
+                "❓";
+
+            secondCard.textContent =
+                "❓";
+
+            resetTurn();
+
+        }, 900);
+
+    }
+
+}
+
+
+/* =========================================================
+   RESET TURN
+   ========================================================= */
+
+function resetTurn() {
+
+    [
+        firstCard,
+        secondCard
+    ] = [
+        null,
+        null
+    ];
+
+    lock = false;
+
+}
+
+
+/* =========================================================
+   FINISH GAME
+   ========================================================= */
+
+function finishGame() {
+
+    const timeTaken =
+        (Date.now() - startTime) / 1000;
+
+
+    const expectedTime =
+        numPairs * 6;
+
+
+    /*
+     * Accuracy is based on successful
+     * pair matches versus attempted pairs.
+     *
+     * Example:
+     * 5 correct attempts / 6 total attempts
+     * = 83.3%
+     */
+
+    const accuracy =
+        attempts > 0
+            ? matches / attempts
+            : 0;
+
+
+    const score =
+        matches;
+
+
+    const maxScore =
+        numPairs;
+
+
+    const language = getMemoryLanguage();
+    const dict = MEMORY_TRANSLATIONS[language];
+
+    document.getElementById(
+        "result"
+    ).textContent =
+        `${dict.wellDone} ${timeTaken.toFixed(1)}s`;
+
+
+    /* =====================================================
+       SEND STANDARDIZED COGNITIVE DATA
+       ===================================================== */
+
+    fetch(
+        "/api/submit-score",
+        {
+            method: "POST",
+
+            headers: {
+                "Content-Type":
+                    "application/json"
+            },
+
+            body: JSON.stringify({
+
+                patient_id:
+                    patientId,
+
+                game_name:
+                    "memory_match",
+
+                score:
+                    score,
+
+                max_score:
+                    maxScore,
+
+                accuracy:
+                    accuracy,
+
+                time_taken_seconds:
+                    timeTaken,
+
+                expected_time_seconds:
+                    expectedTime,
+
+                errors:
+                    errors,
+
+                hints_used:
+                    0,
+
+                completion_status:
+                    "completed",
+
+                /*
+                 * Universal cognitive
+                 * domain mapping.
+                 *
+                 * This is what allows the
+                 * AI system to understand
+                 * future games without
+                 * rebuilding the analytics
+                 * engine.
+                 */
+
+                domains: [
+                    "memory",
+                    "attention"
+                ],
+
+                /*
+                 * Extra game-specific
+                 * information.
+                 *
+                 * Future AI/ML models can
+                 * use this later.
+                 */
+
+                metrics: {
+
+                    pairs:
+                        numPairs,
+
+                    successful_matches:
+                        matches,
+
+                    attempts:
+                        attempts,
+
+                    errors:
+                        errors
+
+                }
+
+            })
+
+        }
+    )
+    .then(response => response.json())
+    .then(data => {
+
+        console.log(
+            "NER-Care AI analytics updated:",
+            data
+        );
+
+    })
+    .catch(error => {
+
+        console.error(
+            "Score submission failed:",
+            error
+        );
+
+    });
+
+}
+
+
+/* =========================================================
+   APPLY LANGUAGE AFTER PAGE LOAD
+   ========================================================= */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+        applyMemoryLanguage();
+    }
+);
+
+</script>
+
+{% endblock %}

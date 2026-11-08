@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}NER-Care Login{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+    <div class="auth-card">
+        <div class="auth-header">
+            <div class="auth-icon">🔐</div>
+            <div>
+                <div class="auth-kicker">NER-CARE</div>
+                <h1>Welcome Back</h1>
+                <p>Log in to your caregiver or patient account.</p>
+            </div>
+        </div>
+
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="auth-alert">
+                    {% for message in messages %}<div>{{ message }}</div>{% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST" class="auth-form">
+            <div class="role-switch">
+                <button type="button" class="role-option {% if selected_role != 'patient' %}active{% endif %}" data-role="caregiver">👨‍⚕️ Caregiver</button>
+                <button type="button" class="role-option {% if selected_role == 'patient' %}active{% endif %}" data-role="patient">👴 Patient</button>
+            </div>
+            <input type="hidden" name="role" id="roleInput" value="{{ selected_role or 'caregiver' }}">
+            <input type="hidden" name="next" value="{{ next or '' }}">
+
+            <label>Email</label>
+            <input type="email" name="email" required autocomplete="email" placeholder="Enter email address">
+
+            <label>Password</label>
+            <input type="password" name="password" required autocomplete="current-password" placeholder="Enter password">
+
+            <button type="submit" class="auth-submit">Log In →</button>
+        </form>
+
+        <div class="auth-links"><a href="{{ url_for('register') }}">Create an account</a> <span>•</span> <a href="#">Forgot password?</a></div>
+    </div>
+</div>
+
+<style>
+.auth-page{min-height:65vh;display:flex;justify-content:center;align-items:center;padding:20px 0 50px}.auth-card{width:min(560px,100%);background:#fff;border:1px solid #dce7ef;border-radius:22px;padding:30px;box-shadow:0 16px 45px rgba(20,55,80,.12)}.auth-header{display:flex;gap:16px;align-items:center;margin-bottom:24px}.auth-icon{width:58px;height:58px;border-radius:16px;background:#eaf7fb;display:flex;align-items:center;justify-content:center;font-size:29px}.auth-kicker{font-size:11px;font-weight:800;letter-spacing:1.5px;color:#0b7892}.auth-header h1{margin:3px 0;font-size:28px;color:#17324a}.auth-header p{margin:0;color:#637789}.auth-alert{background:#fff2f2;border:1px solid #f0c8c8;color:#9b3030;padding:12px 14px;border-radius:12px;margin-bottom:18px;font-size:14px}.auth-form{display:flex;flex-direction:column;gap:9px}.auth-form label{font-size:13px;font-weight:700;color:#385269;margin-top:6px}.auth-form input{width:100%;box-sizing:border-box;padding:12px 13px;border:1px solid #cfdde7;border-radius:11px;font-size:14px;background:#fbfdff}.auth-form input:focus{outline:none;border-color:#149bb8;box-shadow:0 0 0 3px rgba(20,155,184,.1)}.role-switch{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:7px}.role-option{border:1px solid #cfdde7;background:#f7fafc;border-radius:12px;padding:12px;font-weight:800;color:#476074;cursor:pointer}.role-option.active{background:#e6f7fb;border-color:#119bb9;color:#0b667e}.auth-submit{margin-top:12px;border:0;border-radius:12px;padding:13px;background:#0c7892;color:#fff;font-size:15px;font-weight:800;cursor:pointer;transition:transform .2s ease,box-shadow .2s ease}.auth-submit:hover{transform:translateY(-2px);box-shadow:0 9px 20px rgba(12,120,146,.22)}.auth-links{text-align:center;margin-top:20px;color:#687b8a;font-size:14px}.auth-links a{color:#087c99;font-weight:800;text-decoration:none}.auth-links span{margin:0 8px;color:#a7b4bd}@media(max-width:560px){.auth-card{padding:22px;border-radius:18px}}
+</style>
+
+<script>
+(function(){
+    const roleInput=document.getElementById('roleInput');
+    const buttons=document.querySelectorAll('.role-option');
+    buttons.forEach(b=>b.addEventListener('click',()=>{
+        roleInput.value=b.dataset.role;
+        buttons.forEach(x=>x.classList.toggle('active',x===b));
+    }));
+})();
+</script>
+{% endblock %}

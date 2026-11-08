@@ -1,0 +1,356 @@
+{% extends "base.html" %}
+
+{% block title %}Caregiver Dashboard{% endblock %}
+
+{% block content %}
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+
+<div class="dashboard-header">
+    <div>
+        <!-- =====================================================
+     CAREGIVER DASHBOARD HEADER
+     ===================================================== -->
+
+<div class="caregiver-dashboard-header">
+
+    <div class="caregiver-header-text">
+        <h1>Caregiver Dashboard</h1>
+        <p>Welcome, {{ caregiver['name'] }}</p>
+    </div>
+
+    {% if patient_data|length > 0 %}
+    <a
+        href="{{ url_for('ai_analytics', patient_id=patient_data[0].patient['id']) }}"
+        class="ai-cognitive-center-button"
+    >
+        <span class="ai-button-icon">🧠</span>
+
+        <span class="ai-button-text">
+            <small>INTELLIGENT ANALYSIS</small>
+            AI Cognitive Center
+        </span>
+
+        <span class="ai-button-arrow">→</span>
+    </a>
+    {% endif %}
+
+</div>
+    </div>
+</div>
+
+
+{% for pd in patient_data %}
+
+<!-- PATIENT HEADER -->
+<div class="patient-panel">
+
+    <div class="patient-header">
+        <div>
+            <h2>👤 {{ pd.patient['name'] }}</h2>
+            <p>Patient cognitive care overview</p>
+        </div>
+
+        <span class="level-badge">
+            🧠 Level {{ pd.patient['difficulty_level'] }}
+        </span>
+    </div>
+
+
+    <!-- SUMMARY CARDS -->
+    <div class="caregiver-summary">
+
+        <div class="summary-card">
+            <div class="summary-icon">🧠</div>
+            <div>
+                <span class="summary-label">Cognitive Level</span>
+                <strong>Level {{ pd.patient['difficulty_level'] }}</strong>
+            </div>
+        </div>
+
+
+        <div class="summary-card">
+            <div class="summary-icon">🎮</div>
+            <div>
+                <span class="summary-label">Games Played</span>
+                <strong>{{ pd.scores|length }}</strong>
+            </div>
+        </div>
+
+
+        <div class="summary-card">
+            <div class="summary-icon">📈</div>
+            <div>
+                <span class="summary-label">Latest Score</span>
+
+                {% if pd.scores|length > 0 %}
+                    <strong>{{ pd.scores[-1]['score'] }}</strong>
+                {% else %}
+                    <strong>—</strong>
+                {% endif %}
+
+            </div>
+        </div>
+
+
+        <div class="summary-card">
+            <div class="summary-icon">⏱️</div>
+            <div>
+                <span class="summary-label">Latest Game Time</span>
+
+                {% if pd.scores|length > 0 %}
+                    <strong>
+                        {{ '%.1f'|format(pd.scores[-1]['time_taken_seconds']) }}s
+                    </strong>
+                {% else %}
+                    <strong>—</strong>
+                {% endif %}
+
+            </div>
+        </div>
+
+    </div>
+
+
+</div>
+
+
+<!-- REMINDER SECTION -->
+
+    <div class="dashboard-section reminder-section">
+
+        <div class="section-heading-small">
+            <h3>⏰ Add Patient Reminder</h3>
+
+            <p>
+                Create reminders for medicine, hydration,
+                activities and appointments.
+            </p>
+        </div>
+
+
+        <form
+            class="reminder-form"
+            onsubmit="addReminder(event, {{ pd.patient['id'] }})"
+        >
+
+            <input
+                type="text"
+                id="title-{{ pd.patient['id'] }}"
+                placeholder="e.g. Take blood pressure medicine"
+                required
+            >
+
+
+            <select id="category-{{ pd.patient['id'] }}">
+
+                <option value="Medicine">
+                    💊 Medicine
+                </option>
+
+                <option value="Hydration">
+                    💧 Hydration
+                </option>
+
+                <option value="Activity">
+                    🚶 Daily Activity
+                </option>
+
+                <option value="Appointment">
+                    🏥 Medical Appointment
+                </option>
+                
+
+            </select>
+
+
+            <input
+                type="time"
+                id="time-{{ pd.patient['id'] }}"
+                required
+            >
+
+
+            <button type="submit">
+                ➕ Add Reminder
+            </button>
+
+        </form>
+
+    </div>
+
+    <!-- PERFORMANCE -->
+    <div class="dashboard-section">
+
+        <div class="section-heading-small">
+            <h3>📊 Cognitive Performance</h3>
+            <p>Track the patient's game performance over time.</p>
+        </div>
+
+        {% if pd.scores|length == 0 %}
+
+            <div class="empty-state">
+                <div>🎮</div>
+                <h3>No games played yet</h3>
+                <p>
+                    Performance data will appear here after the patient
+                    completes a game.
+                </p>
+            </div>
+
+        {% else %}
+
+            <div class="chart-container">
+                <canvas id="chart-{{ pd.patient['id'] }}"></canvas>
+            </div>
+
+            <script>
+                const ctx{{ pd.patient['id'] }} =
+                    document.getElementById(
+                        'chart-{{ pd.patient["id"] }}'
+                    ).getContext('2d');
+
+                new Chart(ctx{{ pd.patient['id'] }}, {
+                    type: 'line',
+
+                    data: {
+                        labels: {{ pd.scores | map(attribute='played_at') | list | tojson }},
+
+                        datasets: [{
+                            label: 'Score over time',
+
+                            data: {{ pd.scores | map(attribute='score') | list | tojson }},
+
+                            borderColor: '#2c7be5',
+
+                            backgroundColor: 'rgba(44, 123, 229, 0.08)',
+
+                            fill: true,
+
+                            tension: 0.3,
+
+                            pointRadius: 4
+                        }]
+                    },
+
+                    options: {
+                        responsive: true,
+
+                        plugins: {
+                            legend: {
+                                display: true
+                            }
+                        },
+
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            </script>
+
+
+            <!-- SCORE TABLE -->
+
+            <div class="section-heading-small">
+                <h3>🎮 Game History</h3>
+            </div>
+
+            <div class="table-wrapper">
+
+                <table class="score-table">
+
+                    <tr>
+                        <th>Game</th>
+                        <th>Score</th>
+                        <th>Time</th>
+                        <th>Level</th>
+                        <th>When</th>
+                    </tr>
+
+                    {% for s in pd.scores|reverse %}
+
+                    <tr>
+                        <td>{{ s['game_name'] }}</td>
+
+                        <td>
+                            <strong>{{ s['score'] }}</strong>
+                        </td>
+
+                        <td>
+                            {{ '%.1f'|format(s['time_taken_seconds']) }}s
+                        </td>
+
+                        <td>
+                            <span class="table-level">
+                                Level {{ s['difficulty_level'] }}
+                            </span>
+                        </td>
+
+                        <td>
+                            {{ s['played_at'][:16] }}
+                        </td>
+                    </tr>
+
+                    {% endfor %}
+
+                </table>
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+
+    
+
+    
+{% endfor %}
+
+
+<script>
+
+function addReminder(event, patientId) {
+
+    event.preventDefault();
+
+    const title =
+        document.getElementById(
+            `title-${patientId}`
+        ).value;
+
+    const category =
+        document.getElementById(
+            `category-${patientId}`
+        ).value;
+
+    const time =
+        document.getElementById(
+            `time-${patientId}`
+        ).value;
+
+
+    fetch(`/api/reminders/${patientId}`, {
+
+        method: "POST",
+
+        headers: {
+            "Content-Type": "application/json"
+        },
+
+        body: JSON.stringify({
+            title: title,
+            category: category,
+            reminder_time: time
+        })
+
+    }).then(() => location.reload());
+
+}
+
+</script>
+
+{% endblock %}

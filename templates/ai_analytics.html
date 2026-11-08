@@ -1,0 +1,2104 @@
+{% extends "base.html" %}
+
+{% block title %}AI Cognitive Center
+
+
+{% endblock %}
+
+{% block content %}
+
+<style>
+/* ============================================================
+   NER-Care — Futuristic AI Cognitive Center
+   Self-contained styles so no style.css changes are required.
+   ============================================================ */
+
+.ai-center {
+    --ai-navy: #071a32;
+    --ai-blue: #0b3155;
+    --ai-cyan: #55ddff;
+    --ai-violet: #8b7cff;
+    --ai-green: #35d39a;
+    --ai-yellow: #ffd166;
+    --ai-red: #ff7187;
+    --ai-muted: #6b7b93;
+    --ai-border: rgba(75, 122, 170, 0.18);
+    --ai-card: rgba(255,255,255,0.92);
+
+    position: relative;
+    overflow: hidden;
+    border-radius: 28px;
+    padding: 30px;
+    background:
+        radial-gradient(circle at 85% 5%, rgba(85,221,255,.16), transparent 28%),
+        radial-gradient(circle at 5% 20%, rgba(139,124,255,.12), transparent 25%),
+        linear-gradient(145deg, #f8fbff 0%, #eef5fc 48%, #f8faff 100%);
+    border: 1px solid rgba(85, 140, 190, 0.16);
+    box-shadow: 0 22px 60px rgba(22, 52, 91, .10);
+}
+
+.ai-center::before,
+.ai-center::after {
+    content: "";
+    position: absolute;
+    pointer-events: none;
+    border-radius: 50%;
+    filter: blur(1px);
+}
+
+.ai-center::before {
+    width: 260px;
+    height: 260px;
+    right: -120px;
+    top: 180px;
+    border: 1px solid rgba(85,221,255,.16);
+    box-shadow: 0 0 80px rgba(85,221,255,.10);
+}
+
+.ai-center::after {
+    width: 180px;
+    height: 180px;
+    left: -90px;
+    bottom: 100px;
+    border: 1px solid rgba(139,124,255,.14);
+}
+
+.ai-hero {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 25px;
+    align-items: center;
+    padding: 26px;
+    border-radius: 23px;
+    color: white;
+    background:
+        linear-gradient(120deg, rgba(7,26,50,.98), rgba(11,49,85,.96) 55%, rgba(27,29,76,.97));
+    border: 1px solid rgba(85,221,255,.35);
+    box-shadow:
+        0 0 35px rgba(0,212,255,.12),
+        inset 0 0 35px rgba(85,221,255,.035);
+    overflow: hidden;
+}
+
+.ai-hero::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+        linear-gradient(90deg, transparent 0%, rgba(85,221,255,.06) 50%, transparent 100%);
+    transform: translateX(-100%);
+    animation: aiScan 5s ease-in-out infinite;
+}
+
+@keyframes aiScan {
+    0%, 35% { transform: translateX(-100%); }
+    70%, 100% { transform: translateX(100%); }
+}
+
+.ai-hero-copy,
+.ai-core {
+    position: relative;
+    z-index: 2;
+}
+
+.ai-kicker {
+    margin: 0 0 8px;
+    color: var(--ai-cyan);
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+.ai-hero h1 {
+    margin: 0;
+    font-size: clamp(27px, 4vw, 42px);
+    line-height: 1.05;
+    letter-spacing: -.8px;
+}
+
+.ai-hero p {
+    margin: 12px 0 0;
+    max-width: 700px;
+    color: rgba(255,255,255,.76);
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.ai-core {
+    width: 118px;
+    height: 118px;
+    display: grid;
+    place-items: center;
+}
+
+.ai-core-ring {
+    position: absolute;
+    border-radius: 50%;
+    border: 1px solid rgba(85,221,255,.55);
+    animation: corePulse 2.8s ease-in-out infinite;
+}
+
+.ai-core-ring:nth-child(1) { inset: 12px; }
+.ai-core-ring:nth-child(2) { inset: 24px; animation-delay: .4s; }
+.ai-core-ring:nth-child(3) { inset: 36px; animation-delay: .8s; }
+
+@keyframes corePulse {
+    0%,100% { transform: scale(.94); opacity: .45; }
+    50% { transform: scale(1.05); opacity: 1; }
+}
+
+.ai-core-icon {
+    position: relative;
+    z-index: 3;
+    width: 56px;
+    height: 56px;
+    display: grid;
+    place-items: center;
+    border-radius: 18px;
+    font-size: 30px;
+    background: linear-gradient(145deg, rgba(85,221,255,.20), rgba(139,124,255,.25));
+    border: 1px solid rgba(85,221,255,.60);
+    box-shadow: 0 0 28px rgba(85,221,255,.22);
+}
+
+.ai-section {
+    position: relative;
+    z-index: 1;
+    margin-top: 22px;
+}
+
+.ai-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0,1fr));
+    gap: 15px;
+}
+
+.ai-stat {
+    min-height: 118px;
+    padding: 19px;
+    border-radius: 19px;
+    background: var(--ai-card);
+    border: 1px solid var(--ai-border);
+    box-shadow: 0 10px 28px rgba(26,55,88,.07);
+}
+
+.ai-stat-label {
+    color: var(--ai-muted);
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .8px;
+}
+
+.ai-stat-value {
+    margin-top: 9px;
+    color: var(--ai-navy);
+    font-size: 25px;
+    font-weight: 900;
+}
+
+.ai-stat-sub {
+    margin-top: 5px;
+    color: #7a899d;
+    font-size: 11px;
+}
+
+.ai-main-grid {
+    display: grid;
+    grid-template-columns: 1.35fr .65fr;
+    gap: 20px;
+}
+
+.ai-card {
+    background: var(--ai-card);
+    border: 1px solid var(--ai-border);
+    border-radius: 21px;
+    padding: 23px;
+    box-shadow: 0 10px 28px rgba(26,55,88,.07);
+}
+
+.ai-card h2 {
+    margin: 0;
+    color: var(--ai-navy);
+    font-size: 19px;
+}
+
+.ai-card-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.ai-card-head p {
+    margin: 5px 0 0;
+    color: var(--ai-muted);
+    font-size: 12px;
+}
+
+.ai-signal {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    padding: 9px 13px;
+    border-radius: 999px;
+    background: #eef4f8;
+    color: #51657b;
+    font-size: 11px;
+    font-weight: 900;
+    white-space: nowrap;
+}
+
+.ai-signal-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #7b8da1;
+    box-shadow: 0 0 9px currentColor;
+}
+
+.ai-signal.improving { color: #178a63; background: #e8fbf3; }
+.ai-signal.improving .ai-signal-dot { background: var(--ai-green); }
+.ai-signal.monitor { color: #9a6b00; background: #fff7df; }
+.ai-signal.monitor .ai-signal-dot { background: var(--ai-yellow); }
+.ai-signal.review { color: #bd4057; background: #fff0f3; }
+.ai-signal.review .ai-signal-dot { background: var(--ai-red); }
+.ai-signal.stable { color: #286b9c; background: #eaf6fd; }
+.ai-signal.stable .ai-signal-dot { background: var(--ai-cyan); }
+
+.signal-reason {
+    margin: 9px 0 0;
+    color: #6c7c90;
+    font-size: 11px;
+    line-height: 1.45;
+    text-align: right;
+    max-width: 300px;
+}
+
+
+.domain-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 13px;
+}
+
+.domain-row {
+    margin: 0;
+    padding: 15px;
+    border: 1px solid #e4ebf3;
+    border-radius: 16px;
+    background: linear-gradient(145deg, #ffffff, #f8fbfe);
+    transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+}
+
+.domain-row:hover {
+    transform: translateY(-2px);
+    border-color: #cfe4f1;
+    box-shadow: 0 8px 20px rgba(26, 74, 110, .08);
+}
+
+.domain-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 11px;
+}
+
+.domain-name-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.domain-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #8b7cff;
+    box-shadow: 0 0 8px rgba(139,124,255,.35);
+    flex-shrink: 0;
+}
+
+.domain-name {
+    color: #243b59;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.domain-value {
+    color: #243b59;
+    font-size: 12px;
+    font-weight: 900;
+    white-space: nowrap;
+}
+
+.domain-track {
+    height: 8px;
+    overflow: hidden;
+    border-radius: 99px;
+    background: #e8eef5;
+}
+
+.domain-fill {
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #2eb9e8, #756ee8);
+    box-shadow: 0 0 10px rgba(73,173,225,.18);
+}
+
+.domain-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.domain-trend {
+    color: #6c7c90;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+.domain-status {
+    padding: 4px 8px;
+    border-radius: 999px;
+    font-size: 9px;
+    font-weight: 900;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+}
+
+.domain-status.improving { color: #178a63; background: #e8fbf3; }
+.domain-status.monitor { color: #9a6b00; background: #fff7df; }
+.domain-status.stable { color: #286b9c; background: #eaf6fd; }
+.domain-status.insufficient { color: #7b8999; background: #eef2f6; }
+
+.domain-unavailable {
+    color: #9aa8b8;
+    font-size: 11px;
+    font-style: italic;
+}
+
+@media (max-width: 700px) {
+    .domain-grid { grid-template-columns: 1fr; }
+}
+
+.confidence-wrap {
+    display: grid;
+    place-items: center;
+    min-height: 220px;
+}
+
+.confidence-ring {
+    width: 150px;
+    height: 150px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background:
+        radial-gradient(circle at center, #fff 57%, transparent 58%),
+        conic-gradient(#55ccef {{ analytics.confidence.score }}%, #e8eef5 0);
+    box-shadow: 0 0 35px rgba(85,221,255,.13);
+}
+
+.confidence-inner {
+    text-align: center;
+}
+
+.confidence-number {
+    color: var(--ai-navy);
+    font-size: 31px;
+    font-weight: 900;
+}
+
+.confidence-label {
+    max-width: 100px;
+    color: #718197;
+    font-size: 9px;
+    font-weight: 900;
+    letter-spacing: .8px;
+    text-transform: uppercase;
+}
+
+.confidence-note {
+    margin: 15px 0 0;
+    color: #748399;
+    text-align: center;
+    font-size: 11px;
+    line-height: 1.5;
+}
+
+.insight-list {
+    display: grid;
+    gap: 12px;
+}
+
+.insight {
+    display: grid;
+    grid-template-columns: 36px 1fr;
+    gap: 12px;
+    align-items: start;
+    padding: 14px;
+    border-radius: 15px;
+    background: #f7fafd;
+    border: 1px solid #e6edf4;
+}
+
+.insight-icon {
+    width: 36px;
+    height: 36px;
+    display: grid;
+    place-items: center;
+    border-radius: 11px;
+    background: #eaf6fd;
+    font-size: 16px;
+}
+
+.insight-title {
+    margin: 0 0 3px;
+    color: #233b59;
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.insight-message {
+    margin: 0;
+    color: #6c7c90;
+    font-size: 11px;
+    line-height: 1.55;
+}
+
+.game-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.game-table th {
+    padding: 9px 8px;
+    color: #8795a7;
+    font-size: 9px;
+    letter-spacing: .7px;
+    text-align: left;
+    text-transform: uppercase;
+    border-bottom: 1px solid #e7edf3;
+}
+
+.game-table td {
+    padding: 13px 8px;
+    color: #3a4f69;
+    font-size: 11px;
+    border-bottom: 1px solid #edf1f5;
+}
+
+.game-table tr:last-child td { border-bottom: 0; }
+
+.game-name {
+    color: #1f3654;
+    font-weight: 900;
+}
+
+.mini-pill {
+    display: inline-block;
+    padding: 5px 8px;
+    border-radius: 999px;
+    background: #eef5fb;
+    color: #50708e;
+    font-size: 9px;
+    font-weight: 800;
+}
+
+.trend-grid {
+    display: grid;
+    grid-template-columns: repeat(3,1fr);
+    gap: 12px;
+}
+
+.trend-box {
+    padding: 15px;
+    border-radius: 15px;
+    background: #f7fafd;
+    border: 1px solid #e7edf3;
+}
+
+.trend-label {
+    color: #7d8ca0;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+.trend-value {
+    margin-top: 6px;
+    color: #203955;
+    font-size: 21px;
+    font-weight: 900;
+}
+
+.trend-positive { color: #168c65; }
+.trend-negative { color: #c44c62; }
+
+.ai-disclaimer {
+    padding: 15px 17px;
+    border-radius: 15px;
+    color: #63748a;
+    background: rgba(236,244,251,.80);
+    border: 1px solid #dce8f2;
+    font-size: 10px;
+    line-height: 1.55;
+}
+
+.ai-disclaimer strong { color: #304965; }
+
+.ai-footer {
+    margin-top: 20px;
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+    align-items: center;
+    color: #8492a5;
+    font-size: 10px;
+}
+
+.ai-live {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-weight: 800;
+}
+
+.ai-live-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #35d39a;
+    box-shadow: 0 0 10px rgba(53,211,154,.65);
+    animation: livePulse 1.8s infinite;
+}
+
+@keyframes livePulse {
+    0%,100% { opacity: .45; transform: scale(.8); }
+    50% { opacity: 1; transform: scale(1.1); }
+}
+
+@media (max-width: 950px) {
+    .ai-grid { grid-template-columns: repeat(2,1fr); }
+    .ai-main-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 650px) {
+    .ai-center { padding: 15px; border-radius: 20px; }
+    .ai-hero { grid-template-columns: 1fr; padding: 21px; }
+    .ai-core { display: none; }
+    .ai-grid { grid-template-columns: 1fr 1fr; }
+    .ai-card { padding: 17px; }
+    .ai-card-head { flex-direction: column; }
+    .trend-grid { grid-template-columns: 1fr; }
+    .game-table { font-size: 10px; }
+    .game-table th:nth-child(3),
+    .game-table td:nth-child(3) { display: none; }
+    .ai-footer { flex-direction: column; align-items: flex-start; }
+}
+
+@media (max-width: 430px) {
+    .ai-grid { grid-template-columns: 1fr; }
+}
+
+
+/* ============================================================
+   LONGITUDINAL PERFORMANCE TIMELINE
+   ============================================================ */
+.timeline-card {
+    margin-top: 4px;
+    padding: 18px;
+    border: 1px solid #e4ebf3;
+    border-radius: 18px;
+    background: linear-gradient(145deg, #fbfdff, #f5f9fd);
+}
+.timeline-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 18px;
+}
+.timeline-head strong {
+    color: var(--ai-navy);
+    font-size: 12px;
+}
+.timeline-head span {
+    color: #7a899b;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: .7px;
+    text-transform: uppercase;
+}
+.timeline-list {
+    display: grid;
+    gap: 9px;
+}
+.timeline-item {
+    display: grid;
+    grid-template-columns: 72px 18px 1fr auto;
+    align-items: center;
+    gap: 10px;
+    min-height: 48px;
+}
+.timeline-date {
+    color: #7b8999;
+    font-size: 9px;
+    font-weight: 800;
+    text-align: right;
+}
+.timeline-marker-wrap {
+    position: relative;
+    align-self: stretch;
+    display: flex;
+    justify-content: center;
+}
+.timeline-marker-wrap::after {
+    content: '';
+    position: absolute;
+    top: 25px;
+    bottom: -9px;
+    width: 1px;
+    background: #dbe5ef;
+}
+.timeline-item:last-child .timeline-marker-wrap::after { display: none; }
+.timeline-marker {
+    position: relative;
+    z-index: 2;
+    width: 10px;
+    height: 10px;
+    margin-top: 17px;
+    border-radius: 50%;
+    background: #55ccef;
+    box-shadow: 0 0 0 4px #e8f8fd;
+}
+.timeline-body {
+    min-width: 0;
+}
+.timeline-game {
+    margin-bottom: 5px;
+    color: #314b65;
+    font-size: 10px;
+    font-weight: 900;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.timeline-track {
+    height: 7px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: #e7eef5;
+}
+.timeline-fill {
+    height: 100%;
+    min-width: 3px;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #55ccef, #7c8cff);
+    transition: width .6s ease;
+}
+.timeline-score {
+    min-width: 52px;
+    color: var(--ai-navy);
+    font-size: 12px;
+    font-weight: 900;
+    text-align: right;
+}
+.timeline-score small {
+    display: block;
+    margin-top: 2px;
+    color: #8492a3;
+    font-size: 8px;
+    font-weight: 800;
+}
+.timeline-empty {
+    padding: 20px;
+    color: #7a899b;
+    text-align: center;
+    font-size: 11px;
+}
+.timeline-summary {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 9px;
+    margin-top: 16px;
+}
+.timeline-summary-box {
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: #fff;
+    border: 1px solid #e5ecf3;
+}
+.timeline-summary-box span {
+    display: block;
+    color: #8492a3;
+    font-size: 8px;
+    font-weight: 900;
+    letter-spacing: .6px;
+    text-transform: uppercase;
+}
+.timeline-summary-box strong {
+    display: block;
+    margin-top: 4px;
+    color: var(--ai-navy);
+    font-size: 13px;
+}
+@media (max-width: 700px) {
+    .timeline-item { grid-template-columns: 58px 16px 1fr auto; gap: 7px; }
+    .timeline-summary { grid-template-columns: 1fr; }
+}
+
+
+
+/* ============================================================
+   CAREGIVER RECOMMENDATIONS
+   ============================================================ */
+.recommendation-list {
+    display: grid;
+    gap: 12px;
+}
+.recommendation {
+    display: grid;
+    grid-template-columns: 40px 1fr;
+    gap: 13px;
+    padding: 15px;
+    border-radius: 16px;
+    border: 1px solid #e4ebf3;
+    background: linear-gradient(145deg, #fbfdff, #f6f9fc);
+}
+.recommendation-icon {
+    width: 40px;
+    height: 40px;
+    display: grid;
+    place-items: center;
+    border-radius: 12px;
+    font-size: 17px;
+    background: #eaf6fd;
+}
+.recommendation-title {
+    margin: 0 0 4px;
+    color: #203955;
+    font-size: 12px;
+    font-weight: 900;
+}
+.recommendation-message {
+    margin: 0;
+    color: #64768b;
+    font-size: 10.5px;
+    line-height: 1.5;
+}
+.recommendation-why {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid #e5edf4;
+    color: #52677f;
+    font-size: 10px;
+    line-height: 1.5;
+}
+.recommendation-action {
+    margin-top: 5px;
+    color: #285f80;
+    font-size: 10px;
+    line-height: 1.5;
+}
+.recommendation.priority-high {
+    border-left: 3px solid #e0a52b;
+}
+.recommendation.priority-positive {
+    border-left: 3px solid #35b98a;
+}
+.recommendation.priority-routine,
+.recommendation.priority-info {
+    border-left: 3px solid #55ccef;
+}
+.recommendation-badge {
+    display: inline-block;
+    margin-bottom: 5px;
+    padding: 3px 7px;
+    border-radius: 999px;
+    color: #5f7186;
+    background: #eef4f8;
+    font-size: 8px;
+    font-weight: 900;
+    letter-spacing: .7px;
+    text-transform: uppercase;
+}
+@media (max-width: 600px) {
+    .recommendation {
+        grid-template-columns: 34px 1fr;
+        padding: 13px;
+    }
+    .recommendation-icon {
+        width: 34px;
+        height: 34px;
+        font-size: 15px;
+    }
+}
+
+
+/* ============================================================
+   CAREGIVER OBSERVATION LAYER
+   ============================================================ */
+.observation-layout { display:grid; grid-template-columns: .9fr 1.1fr; gap:18px; }
+.observation-form { padding:18px; border-radius:17px; background:#f8fbfe; border:1px solid #e3ebf3; }
+.observation-form label { display:block; margin:0 0 6px; color:#50647b; font-size:10px; font-weight:900; }
+.observation-form select, .observation-form textarea { width:100%; box-sizing:border-box; border:1px solid #dbe6ef; border-radius:11px; padding:10px; background:#fff; color:#314963; font:inherit; font-size:11px; outline:none; }
+.observation-form textarea { min-height:82px; resize:vertical; margin-bottom:10px; }
+.observation-form select { margin-bottom:10px; }
+.observation-form select:focus, .observation-form textarea:focus { border-color:#72cce9; box-shadow:0 0 0 3px rgba(85,221,255,.10); }
+.observation-submit { width:100%; border:0; border-radius:11px; padding:10px 14px; background:linear-gradient(135deg,#0b3155,#235b82); color:#fff; font-size:11px; font-weight:900; cursor:pointer; }
+.observation-submit:disabled { opacity:.6; cursor:wait; }
+.observation-message { min-height:15px; margin-top:7px; color:#6f8094; font-size:9px; }
+.observation-list { display:grid; gap:9px; max-height:300px; overflow:auto; padding-right:3px; }
+.observation-item { padding:12px 13px; border:1px solid #e4ebf3; border-radius:14px; background:#fff; }
+.observation-item-top { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.observation-category { color:#27425f; font-size:10px; font-weight:900; }
+.observation-date { color:#8a98a8; font-size:8px; }
+.observation-note { margin:7px 0 0; color:#65778b; font-size:10px; line-height:1.5; }
+.observation-status { display:inline-block; margin-top:7px; padding:3px 7px; border-radius:999px; background:#eef4f8; color:#607389; font-size:8px; font-weight:900; text-transform:uppercase; letter-spacing:.5px; }
+.observation-status.concerning { background:#fff4df; color:#9a6b00; }
+.observation-status.improved { background:#e8fbf3; color:#178a63; }
+.observation-status.resolved { background:#eaf6fd; color:#286b9c; }
+.observation-empty { padding:35px 15px; text-align:center; color:#8795a7; font-size:10px; border:1px dashed #dce6ef; border-radius:14px; }
+@media (max-width:700px) { .observation-layout { grid-template-columns:1fr; } }
+
+
+/* AI HERO HIGH-CONTRAST OVERRIDE */
+.ai-hero h1 {
+    color: #ffffff !important;
+    text-shadow: 0 0 14px rgba(85,221,255,.18), 0 2px 5px rgba(0,0,0,.28) !important;
+}
+.ai-hero .ai-kicker {
+    color: #55ddff !important;
+}
+.ai-hero p {
+    color: rgba(255,255,255,.88) !important;
+}
+.ai-hero-copy::after {
+    content: "";
+    display: block;
+    width: 90px;
+    height: 3px;
+    margin-top: 14px;
+    border-radius: 10px;
+    background: linear-gradient(90deg,#55ddff,#8b7cff,transparent);
+    box-shadow: 0 0 12px rgba(85,221,255,.35);
+}
+
+
+.ai-context-card,.practice-plan-card{overflow:hidden;}
+.context-headline{margin:4px 0 18px;padding:15px 17px;border:1px solid #dce9f1;border-radius:15px;background:linear-gradient(135deg,#f7fcff,#f5f3ff);color:#183b5b;font-size:16px;font-weight:900;line-height:1.35;}
+.context-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:14px;}
+.context-panel{padding:13px 14px;border:1px solid #e4ebf3;border-radius:13px;background:#fff;}
+.context-label{display:block;margin-bottom:5px;color:#8190a2;font-size:9px;font-weight:900;letter-spacing:.9px;text-transform:uppercase;}
+.context-panel strong{color:#294762;font-size:13px;}
+.context-block{margin-top:12px;padding:12px 14px;border:1px solid #e7edf3;border-radius:13px;background:#fbfdff;}
+.context-block ul{margin:7px 0 0;padding-left:18px;color:#5e7288;font-size:10px;line-height:1.65;}
+.context-interpretation,.context-action{margin-top:12px;padding:12px 14px;border-radius:12px;font-size:10px;line-height:1.55;}
+.context-interpretation{background:#f4f8fb;color:#53697e;}
+.context-action{background:#edf9ff;color:#285f80;}
+.practice-plan-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.practice-domain{color:#183d5d;font-size:22px;font-weight:900;}
+.practice-metric{margin-top:5px;color:#718398;font-size:9px;}
+.practice-games{display:flex;flex-wrap:wrap;gap:7px;}
+.practice-games span{padding:7px 9px;border-radius:10px;background:#eef7fb;border:1px solid #d8ebf4;color:#285f80;font-size:9px;font-weight:800;}
+.practice-meta{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px;color:#61758a;font-size:9px;line-height:1.5;}
+.practice-note{margin-top:12px;color:#8795a7;font-size:8px;line-height:1.5;}
+@media(max-width:700px){.context-grid,.practice-plan-grid{grid-template-columns:1fr;}}
+
+/* ============================================================
+   STEP 12 — CAREGIVER COGNITIVE REPORT
+   ============================================================ */
+.ai-hero-actions {
+    margin-top: 18px;
+}
+
+.ai-report-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    border: 1px solid rgba(85,221,255,.65);
+    border-radius: 12px;
+    padding: 10px 15px;
+    background: rgba(85,221,255,.10);
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 850;
+    letter-spacing: .3px;
+    cursor: pointer;
+    box-shadow: 0 0 16px rgba(85,221,255,.10);
+    transition: .2s ease;
+}
+
+.ai-report-button:hover {
+    transform: translateY(-2px);
+    background: rgba(85,221,255,.18);
+    box-shadow: 0 0 24px rgba(85,221,255,.20);
+}
+
+.ai-print-report {
+    display: none;
+}
+
+.report-header {
+    border-bottom: 2px solid #183b5a;
+    padding-bottom: 14px;
+    margin-bottom: 20px;
+}
+
+.report-header h1 {
+    margin: 0 0 5px;
+    font-size: 25px;
+    color: #102f4a;
+}
+
+.report-header p {
+    margin: 0;
+    color: #5d7185;
+    font-size: 12px;
+}
+
+.report-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.report-box {
+    border: 1px solid #d8e1e9;
+    border-radius: 10px;
+    padding: 12px;
+}
+
+.report-label {
+    display: block;
+    color: #718396;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 5px;
+}
+
+.report-value {
+    color: #173b58;
+    font-size: 15px;
+    font-weight: 800;
+}
+
+.report-section {
+    margin: 18px 0;
+}
+
+.report-section h2 {
+    margin: 0 0 8px;
+    color: #173b58;
+    font-size: 15px;
+}
+
+.report-section p,
+.report-section li {
+    color: #42586b;
+    font-size: 11px;
+    line-height: 1.55;
+}
+
+.report-section ul {
+    margin: 6px 0 0;
+    padding-left: 18px;
+}
+
+.report-footer {
+    margin-top: 25px;
+    padding-top: 12px;
+    border-top: 1px solid #d8e1e9;
+    color: #718396;
+    font-size: 9px;
+    line-height: 1.5;
+}
+
+@media (max-width: 650px) {
+    .report-grid { grid-template-columns: 1fr; }
+}
+
+/* ============================================================
+   REPORT SCREEN PREVIEW
+   ============================================================ */
+.ai-print-report.report-visible {
+    display: block;
+    position: fixed;
+    z-index: 99999;
+    inset: 20px;
+    width: auto;
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
+    padding: 76px 34px 34px;
+    box-sizing: border-box;
+    background: #ffffff;
+    border: 1px solid #dbe6ef;
+    border-radius: 20px;
+    box-shadow: 0 25px 80px rgba(7,26,50,.30);
+}
+
+.report-screen-toolbar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    padding: 14px 18px;
+    background: linear-gradient(135deg,#071a32,#0b3155);
+    border-radius: 20px 20px 0 0;
+    box-shadow: 0 5px 18px rgba(7,26,50,.14);
+}
+
+.report-toolbar-title {
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: .5px;
+}
+
+.report-toolbar-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.report-toolbar-actions button {
+    border: 1px solid rgba(85,221,255,.55);
+    border-radius: 9px;
+    padding: 8px 11px;
+    background: rgba(255,255,255,.08);
+    color: #ffffff;
+    font-size: 10px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.report-toolbar-actions button:hover {
+    background: rgba(85,221,255,.18);
+}
+
+.report-toolbar-actions .report-close {
+    border-color: rgba(255,255,255,.25);
+}
+
+body.report-open {
+    overflow: hidden;
+}
+
+@media (max-width: 650px) {
+    .ai-print-report.report-visible {
+        inset: 8px;
+        max-height: calc(100vh - 16px);
+        padding: 82px 18px 24px;
+        border-radius: 15px;
+    }
+    .report-screen-toolbar {
+        border-radius: 15px 15px 0 0;
+        padding: 12px;
+    }
+    .report-toolbar-title { display: none; }
+}
+
+@media print {
+    body { background: #ffffff !important; }
+    body * { visibility: hidden !important; }
+    .ai-print-report,
+    .ai-print-report * { visibility: visible !important; }
+    .report-screen-toolbar { display: none !important; }
+    .ai-print-report {
+        display: block !important;
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        padding: 25px 30px;
+        box-sizing: border-box;
+        background: #ffffff;
+    }
+}
+
+</style>
+
+<div class="ai-center">
+
+    <!-- =========================================================
+         HERO
+         ========================================================= -->
+    <section class="ai-hero">
+        <div class="ai-hero-copy">
+            <p class="ai-kicker">NER-Care / Intelligent Cognitive Monitoring</p>
+            <h1>🧠 AI Cognitive Center</h1>
+            <p>
+                Longitudinal performance analysis designed to help caregivers
+                understand changes in cognitive game performance over time.
+            </p>
+            <div class="ai-hero-actions">
+                <button type="button" class="ai-report-button" onclick="printCareReport()">
+                    <span>▣</span> Generate Care Report
+                </button>
+            </div>
+        </div>
+
+        <div class="ai-core" aria-hidden="true">
+            <span class="ai-core-ring"></span>
+            <span class="ai-core-ring"></span>
+            <span class="ai-core-ring"></span>
+            <div class="ai-core-icon">✦</div>
+        </div>
+    </section>
+
+    <!-- =========================================================
+         KEY METRICS
+         ========================================================= -->
+    <section class="ai-section">
+        <div class="ai-grid">
+
+            <div class="ai-stat">
+                <div class="ai-stat-label">Patient</div>
+                <div class="ai-stat-value">{{ patient['name'] }}</div>
+                <div class="ai-stat-sub">Active cognitive profile</div>
+            </div>
+
+            <div class="ai-stat">
+                <div class="ai-stat-label">Sessions</div>
+                <div class="ai-stat-value">{{ analytics.total_sessions }}</div>
+                <div class="ai-stat-sub">Tracked game sessions</div>
+            </div>
+
+            <div class="ai-stat">
+                <div class="ai-stat-label">Cognitive Level</div>
+                <div class="ai-stat-value">Level {{ patient['difficulty_level'] }}</div>
+                <div class="ai-stat-sub">Adaptive game level</div>
+            </div>
+
+            <div class="ai-stat">
+                <div class="ai-stat-label">Avg Accuracy</div>
+                <div class="ai-stat-value">
+                    {% if analytics.average_accuracy %}
+                        {{ "%.0f"|format(analytics.average_accuracy) }}%
+                    {% else %}
+                        —
+                    {% endif %}
+                </div>
+                <div class="ai-stat-sub">From structured sessions</div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- =========================================================
+         SIGNAL + CONFIDENCE
+         ========================================================= -->
+    <section class="ai-section">
+        <div class="ai-main-grid">
+
+            <div class="ai-card">
+                <div class="ai-card-head">
+                    <div>
+                        <h2>AI Cognitive Change Signal</h2>
+                        <p>Performance signal based on available longitudinal game data.</p>
+                    </div>
+
+                    {% set signal_class = analytics.signal_class|default('insufficient') %}
+                    <div>
+                        <div class="ai-signal {{ signal_class }}">
+                            <span class="ai-signal-dot"></span>
+                            {{ analytics.signal }}
+                        </div>
+                        <p class="signal-reason">{{ analytics.signal_reason }}</p>
+                    </div>
+                </div>
+
+                <div class="trend-grid">
+
+                    <div class="trend-box">
+                        <div class="trend-label">Performance Change</div>
+                        <div class="trend-value
+                            {% if analytics.score_change > 0 %}trend-positive{% elif analytics.score_change < 0 %}trend-negative{% endif %}">
+                            {% if analytics.score_change > 0 %}
+                                Increased by {{ "%.1f"|format(analytics.score_change) }}%
+                            {% elif analytics.score_change < 0 %}
+                                Decreased by {{ "%.1f"|format(analytics.score_change|abs) }}%
+                            {% else %}
+                                No meaningful change
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="trend-box">
+                        <div class="trend-label">Response Time</div>
+                        <div class="trend-value
+                            {% if analytics.speed_change < 0 %}trend-positive{% elif analytics.speed_change > 0 %}trend-negative{% endif %}">
+                            {% if analytics.speed_change > 0 %}
+                                {{ "%.1f"|format(analytics.speed_change) }}% slower
+                            {% elif analytics.speed_change < 0 %}
+                                {{ "%.1f"|format(analytics.speed_change|abs) }}% faster
+                            {% else %}
+                                No meaningful change
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="trend-box">
+                        <div class="trend-label">Recent Performance</div>
+                        <div class="trend-value">
+                            {{ "%.1f"|format(analytics.recent_score|default(0)) }}%
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="ai-card">
+                <div class="ai-card-head">
+                    <div>
+                        <h2>Data Confidence</h2>
+                        <p>Data sufficiency, not diagnostic confidence.</p>
+                    </div>
+                </div>
+
+                <div class="confidence-wrap">
+                    <div>
+                        <div class="confidence-ring">
+                            <div class="confidence-inner">
+                                <div class="confidence-number">
+                                    {{ analytics.confidence.score }}%
+                                </div>
+                                <div class="confidence-label">
+                                    {{ analytics.confidence.label }}
+                                </div>
+                            </div>
+                        </div>
+                        <p class="confidence-note">
+                            Based on {{ analytics.total_sessions }} tracked session(s).
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- =========================================================
+         COGNITIVE DOMAIN PROFILE
+         ========================================================= -->
+    <section class="ai-section">
+        <div class="ai-card">
+            <div class="ai-card-head">
+                <div>
+                    <h2>🧩 Cognitive Domain Profile</h2>
+                    <p>Game performance mapped to standardized cognitive domains.</p>
+                </div>
+            </div>
+
+            <div class="domain-grid">
+                {% for domain_key in cognitive_domains %}
+                    {% set domain_label = domain_key|replace('_', ' ')|title %}
+                    {% set domain = analytics.domains.get(domain_key, {}) %}
+                    {% if domain.available %}
+                        {% if domain.trend >= 15 %}
+                            {% set domain_status = 'improving' %}
+                            {% set domain_status_label = 'Improving' %}
+                        {% elif domain.trend <= -15 %}
+                            {% set domain_status = 'monitor' %}
+                            {% set domain_status_label = 'Monitor' %}
+                        {% else %}
+                            {% set domain_status = 'stable' %}
+                            {% set domain_status_label = 'Stable' %}
+                        {% endif %}
+                    {% else %}
+                        {% set domain_status = 'insufficient' %}
+                        {% set domain_status_label = 'Insufficient data' %}
+                    {% endif %}
+
+                    <div class="domain-row">
+                        <div class="domain-top">
+                            <div class="domain-name-wrap">
+                                <span class="domain-dot"></span>
+                                <span class="domain-name">{{ domain_label }}</span>
+                            </div>
+
+                            {% if domain.available %}
+                                <span class="domain-value">{{ "%.0f"|format(domain.accuracy) }}%</span>
+                            {% endif %}
+                        </div>
+
+                        {% if domain.available %}
+                            <div class="domain-track">
+                                <div class="domain-fill" style="width: {{ [domain.accuracy, 100]|min }}%;"></div>
+                            </div>
+                            <div class="domain-bottom">
+                                <span class="domain-trend">
+                                    {% if domain.trend > 0 %}
+                                        Increased by {{ "%.1f"|format(domain.trend) }}%
+                                    {% elif domain.trend < 0 %}
+                                        Decreased by {{ "%.1f"|format(domain.trend|abs) }}%
+                                    {% else %}
+                                        No meaningful change
+                                    {% endif %}
+                                </span>
+                                <span class="domain-status {{ domain_status }}">{{ domain_status_label }}</span>
+                            </div>
+                        {% else %}
+                            <div class="domain-track"><div class="domain-fill" style="width:0%;opacity:.25;"></div></div>
+                            <div class="domain-bottom">
+                                <span class="domain-trend">Needs more sessions</span>
+                                <span class="domain-status insufficient">Insufficient data</span>
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <!-- =========================================================
+         LONGITUDINAL PERFORMANCE TIMELINE
+         ========================================================= -->
+    <section class="ai-section">
+        <div class="ai-card">
+            <div class="ai-card-head">
+                <div>
+                    <h2>📈 Longitudinal Performance</h2>
+                    <p>Recent sessions shown as a time-based performance trajectory.</p>
+                </div>
+            </div>
+
+            <div class="timeline-card">
+                <div class="timeline-head">
+                    <strong>Recent Session Timeline</strong>
+                    <span>Last {{ analytics.recent_sessions|length }} sessions</span>
+                </div>
+
+                {% if analytics.recent_sessions and analytics.recent_sessions|length > 0 %}
+                    <div class="timeline-list">
+                        {% for session in analytics.recent_sessions|reverse %}
+                            {% set session_value = session.accuracy if session.accuracy is not none else session.score %}
+                            {% set display_value = [session_value, 100]|min %}
+                            <div class="timeline-item">
+                                <div class="timeline-date">
+                                    {{ session.played_at[:10] if session.played_at else 'Recent' }}
+                                </div>
+
+                                <div class="timeline-marker-wrap">
+                                    <span class="timeline-marker"></span>
+                                </div>
+
+                                <div class="timeline-body">
+                                    <div class="timeline-game">
+                                        {{ session.game_name|replace('_',' ')|title }}
+                                    </div>
+                                    <div class="timeline-track">
+                                        <div class="timeline-fill" style="width: {{ display_value }}%;"></div>
+                                    </div>
+                                </div>
+
+                                <div class="timeline-score">
+                                    {{ "%.0f"|format(session_value) }}%
+                                    <small>
+                                        {% if session.response_time is not none %}
+                                            {{ "%.1f"|format(session.response_time) }}s
+                                        {% else %}
+                                            —
+                                        {% endif %}
+                                    </small>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="timeline-summary">
+                        <div class="timeline-summary-box">
+                            <span>Baseline</span>
+                            <strong>{{ "%.1f"|format(analytics.baseline_score) }}%</strong>
+                        </div>
+                        <div class="timeline-summary-box">
+                            <span>Recent</span>
+                            <strong>{{ "%.1f"|format(analytics.recent_score) }}%</strong>
+                        </div>
+                        <div class="timeline-summary-box">
+                            <span>Sessions</span>
+                            <strong>{{ analytics.total_sessions }}</strong>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="timeline-empty">
+                        Complete more cognitive game sessions to build a longitudinal performance timeline.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+
+    <!-- =========================================================
+         AI INSIGHTS
+         ========================================================= -->
+    <section class="ai-section">
+        <div class="ai-card">
+            <div class="ai-card-head">
+                <div>
+                    <h2>🔍 AI-Detected Insights</h2>
+                    <p>Explainable observations generated from recorded performance data.</p>
+                </div>
+            </div>
+
+            {% if analytics.insights and analytics.insights|length > 0 %}
+
+                <div class="insight-list">
+                    {% for insight in analytics.insights %}
+                        <div class="insight">
+
+                            <div class="insight-icon">
+                                {% if insight.severity == 'warning' %}
+                                    ⚠️
+                                {% elif insight.severity == 'success' %}
+                                    ✅
+                                {% else %}
+                                    💡
+                                {% endif %}
+                            </div>
+
+                            <div>
+                                <p class="insight-title">{{ insight.title }}</p>
+                                <p class="insight-message">{{ insight.message }}</p>
+                                {% if insight.evidence %}
+                                    <div style="margin-top:8px; padding-top:8px; border-top:1px solid #e6edf4; color:#52677f; font-size:10px; line-height:1.5;">
+                                        <strong>Evidence:</strong> {{ insight.evidence }}
+                                    </div>
+                                {% endif %}
+                                {% if insight.action %}
+                                    <div style="margin-top:5px; color:#285f80; font-size:10px; line-height:1.5;">
+                                        <strong>Suggested action:</strong> {{ insight.action }}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                        </div>
+                    {% endfor %}
+                </div>
+
+            {% else %}
+
+                <div class="insight">
+                    <div class="insight-icon">💡</div>
+                    <div>
+                        <p class="insight-title">No major automated insight yet</p>
+                        <p class="insight-message">
+                            Continue structured sessions so the system can compare
+                            performance over time.
+                        </p>
+                    </div>
+                </div>
+
+            {% endif %}
+        </div>
+    </section>
+
+    <!-- =========================================================
+         CAREGIVER RECOMMENDATIONS
+         ========================================================= -->
+    <section class="ai-section">
+        <div class="ai-card">
+            <div class="ai-card-head">
+                <div>
+                    <h2>🧭 Caregiver Recommendations</h2>
+                    <p>Data-driven supportive actions based on the current performance profile.</p>
+                </div>
+                <span class="mini-pill">NON-DIAGNOSTIC</span>
+            </div>
+
+            <div class="recommendation-list">
+
+                {% if analytics.total_sessions < 5 or analytics.structured_sessions < 3 %}
+                    <div class="recommendation priority-info">
+                        <div class="recommendation-icon">📚</div>
+                        <div>
+                            <span class="recommendation-badge">Build baseline</span>
+                            <p class="recommendation-title">Collect more structured sessions</p>
+                            <p class="recommendation-message">
+                                Continue regular cognitive activities before interpreting longer-term changes.
+                            </p>
+                            <div class="recommendation-why">
+                                <strong>Why:</strong>
+                                {{ analytics.total_sessions }} total sessions and
+                                {{ analytics.structured_sessions }} structured sessions are currently available.
+                            </div>
+                            <div class="recommendation-action">
+                                <strong>Suggested action:</strong>
+                                Use several different games across multiple days to build a more reliable baseline.
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+
+                {% if analytics.score_change <= -15 %}
+                    <div class="recommendation priority-high">
+                        <div class="recommendation-icon">🔎</div>
+                        <div>
+                            <span class="recommendation-badge">Review</span>
+                            <p class="recommendation-title">Review the recent performance change</p>
+                            <p class="recommendation-message">
+                                Recent overall performance is meaningfully below the earlier baseline period.
+                            </p>
+                            <div class="recommendation-why">
+                                <strong>Why:</strong>
+                                Performance decreased by {{ "%.1f"|format(analytics.score_change|abs) }}% compared with baseline.
+                            </div>
+                            <div class="recommendation-action">
+                                <strong>Suggested action:</strong>
+                                Continue monitoring upcoming sessions and discuss persistent changes with the appropriate caregiver or healthcare professional.
+                            </div>
+                        </div>
+                    </div>
+                {% elif analytics.score_change >= 10 %}
+                    <div class="recommendation priority-positive">
+                        <div class="recommendation-icon">🌱</div>
+                        <div>
+                            <span class="recommendation-badge">Positive signal</span>
+                            <p class="recommendation-title">Maintain the current practice pattern</p>
+                            <p class="recommendation-message">
+                                Recent overall performance is higher than the earlier baseline period.
+                            </p>
+                            <div class="recommendation-why">
+                                <strong>Why:</strong>
+                                Performance increased by {{ "%.1f"|format(analytics.score_change) }}% compared with baseline.
+                            </div>
+                            <div class="recommendation-action">
+                                <strong>Suggested action:</strong>
+                                Continue regular cognitive practice and check whether the improvement remains consistent.
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="recommendation priority-routine">
+                        <div class="recommendation-icon">🔄</div>
+                        <div>
+                            <span class="recommendation-badge">Routine</span>
+                            <p class="recommendation-title">Continue regular cognitive engagement</p>
+                            <p class="recommendation-message">
+                                Overall performance is currently within the observed baseline range.
+                            </p>
+                            <div class="recommendation-why">
+                                <strong>Why:</strong>
+                                No major sustained overall change was detected in the available data.
+                            </div>
+                            <div class="recommendation-action">
+                                <strong>Suggested action:</strong>
+                                Keep sessions regular and use varied, familiar activities.
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+
+                {% if analytics.speed_change >= 20 %}
+                    <div class="recommendation priority-high">
+                        <div class="recommendation-icon">⏱️</div>
+                        <div>
+                            <span class="recommendation-badge">Monitor speed</span>
+                            <p class="recommendation-title">Give response speed extra attention</p>
+                            <p class="recommendation-message">
+                                Recent responses are slower than the baseline period.
+                            </p>
+                            <div class="recommendation-why">
+                                <strong>Why:</strong>
+                                Average response time increased by {{ "%.1f"|format(analytics.speed_change) }}%.
+                            </div>
+                            <div class="recommendation-action">
+                                <strong>Suggested action:</strong>
+                                Use calm, short sessions and monitor whether slower responses persist.
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+
+                {% set ns = namespace(declining=[]) %}
+                {% for domain_key in cognitive_domains %}
+                    {% set domain = analytics.domains.get(domain_key, {}) %}
+                    {% if domain.available and domain.sessions >= 3 and domain.trend <= -20 %}
+                        {% set ns.declining = ns.declining + [domain_key|replace('_',' ')|title] %}
+                    {% endif %}
+                {% endfor %}
+
+                {% if ns.declining|length > 0 %}
+                    <div class="recommendation priority-high">
+                        <div class="recommendation-icon">🧩</div>
+                        <div>
+                            <span class="recommendation-badge">Targeted practice</span>
+                            <p class="recommendation-title">Focus on changing cognitive domains</p>
+                            <p class="recommendation-message">
+                                A notable change was detected in {{ ns.declining|join(', ') }}.
+                            </p>
+                            <div class="recommendation-why">
+                                <strong>Why:</strong>
+                                These domains show a decline compared with their earlier sessions.
+                            </div>
+                            <div class="recommendation-action">
+                                <strong>Suggested action:</strong>
+                                Include more short activities engaging these domains and observe the next few sessions.
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+
+            </div>
+
+            <div style="margin-top:14px; color:#8795a7; font-size:9px; line-height:1.5;">
+                Recommendations are generated from available game-performance data and are intended to support caregiver observation, not medical diagnosis.
+            </div>
+        </div>
+    </section>
+
+
+    <!-- =========================================================
+         CAREGIVER OBSERVATION LAYER
+         ========================================================= -->
+    <section class="ai-section">
+        <div class="ai-card">
+            <div class="ai-card-head">
+                <div>
+                    <h2>👁️ Caregiver Observations</h2>
+                    <p>Manual observations add real-world context to game performance.</p>
+                </div>
+            </div>
+
+            <div class="observation-layout">
+                <div class="observation-form">
+                    <label for="observation-category">Observation area</label>
+                    <select id="observation-category">
+                        <option value="Memory / Forgetfulness">Memory / Forgetfulness</option>
+                        <option value="Routine / Daily Activities">Routine / Daily Activities</option>
+                        <option value="Mood / Behaviour">Mood / Behaviour</option>
+                        <option value="Medication">Medication</option>
+                        <option value="Sleep">Sleep</option>
+                        <option value="Mobility / Activity">Mobility / Activity</option>
+                        <option value="Communication">Communication</option>
+                        <option value="Other">Other</option>
+                    </select>
+
+                    <label for="observation-status">Status</label>
+                    <select id="observation-status">
+                        <option value="noted">Noted</option>
+                        <option value="improved">Improved</option>
+                        <option value="concerning">Needs attention</option>
+                        <option value="resolved">Resolved</option>
+                    </select>
+
+                    <label for="observation-note">What did you observe?</label>
+                    <textarea id="observation-note" maxlength="500" placeholder="Example: Needed a reminder to follow the morning routine."></textarea>
+
+                    <button class="observation-submit" id="observation-submit" type="button" onclick="saveObservation()">Save observation</button>
+                    <div class="observation-message" id="observation-message"></div>
+                </div>
+
+                <div>
+                    <div class="observation-list" id="observation-list">
+                        {% if observations and observations|length > 0 %}
+                            {% for observation in observations %}
+                                <div class="observation-item">
+                                    <div class="observation-item-top">
+                                        <span class="observation-category">{{ observation.category }}</span>
+                                        <span class="observation-date">{{ observation.observed_at[:16]|replace('T',' ') }}</span>
+                                    </div>
+                                    <p class="observation-note">{{ observation.note }}</p>
+                                    <span class="observation-status {{ observation.status }}">{{ observation.status|replace('_',' ') }}</span>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="observation-empty">No caregiver observations recorded yet.<br>Use the form to add real-world context.</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top:12px; color:#8795a7; font-size:9px; line-height:1.5;">
+                Caregiver observations are manually recorded and are not automatically treated as medical diagnoses or AI conclusions.
+            </div>
+        </div>
+    </section>
+
+    <!-- =========================================================
+         AI CONTEXT FUSION
+         ========================================================= -->
+    <section class="ai-section">
+        <div class="ai-card ai-context-card">
+            <div class="ai-card-head">
+                <div>
+                    <h2>🧠 AI Context Fusion</h2>
+                    <p>Performance, response speed, cognitive domains and caregiver context reviewed together.</p>
+                </div>
+                <span class="mini-pill">EXPLAINABLE</span>
+            </div>
+
+            <div class="context-headline">
+                {{ context_summary.headline }}
+            </div>
+
+            <div class="context-grid">
+                <div class="context-panel">
+                    <span class="context-label">Performance Signal</span>
+                    <strong>{{ context_summary.performance_signal }}</strong>
+                </div>
+                <div class="context-panel">
+                    <span class="context-label">Caregiver Context</span>
+                    <strong>{{ context_summary.observation_count }} observation(s)</strong>
+                </div>
+            </div>
+
+            {% if context_summary.evidence %}
+                <div class="context-block">
+                    <div class="context-label">Data Evidence</div>
+                    <ul>
+                        {% for item in context_summary.evidence %}<li>{{ item }}</li>{% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+
+            {% if context_summary.context %}
+                <div class="context-block">
+                    <div class="context-label">Caregiver Signals</div>
+                    <ul>
+                        {% for item in context_summary.context %}<li>{{ item }}</li>{% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+
+            <div class="context-interpretation">
+                <strong>AI interpretation:</strong> {{ context_summary.interpretation }}
+            </div>
+            <div class="context-action">
+                <strong>Suggested next step:</strong> {{ context_summary.action }}
+            </div>
+        </div>
+    </section>
+
+    <!-- =========================================================
+         PERSONALIZED AI PRACTICE PLAN
+         ========================================================= -->
+    <section class="ai-section">
+        <div class="ai-card practice-plan-card">
+            <div class="ai-card-head">
+                <div>
+                    <h2>🎯 Personalized AI Practice Plan</h2>
+                    <p>Targeted practice suggestions based on the patient's available cognitive-game data.</p>
+                </div>
+                <span class="mini-pill">{{ practice_plan.intensity }}</span>
+            </div>
+
+            <div class="practice-plan-grid">
+                <div>
+                    <div class="context-label">Priority domain</div>
+                    <div class="practice-domain">{{ practice_plan.domain }}</div>
+                    {% if practice_plan.sessions >= 3 %}
+                        <div class="practice-metric">{{ "%.0f"|format(practice_plan.accuracy) }}% current accuracy · {{ "%.1f"|format(practice_plan.trend|abs) }}% {% if practice_plan.trend < 0 %}decrease{% elif practice_plan.trend > 0 %}increase{% else %}change{% endif %}</div>
+                    {% else %}
+                        <div class="practice-metric">Needs more structured sessions</div>
+                    {% endif %}
+                </div>
+                <div>
+                    <div class="context-label">Recommended games</div>
+                    <div class="practice-games">
+                        {% for game in practice_plan.games %}<span>{{ game }}</span>{% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="practice-meta">
+                <span><strong>Session length:</strong> {{ practice_plan.duration }}</span>
+                <span><strong>Why:</strong> {{ practice_plan.reason }}</span>
+            </div>
+            <div class="context-action"><strong>Plan:</strong> {{ practice_plan.instruction }}</div>
+            <div class="practice-note">AI recommendations support practice planning and caregiver observation; they do not diagnose a medical condition.</div>
+        </div>
+    </section>
+
+    <!-- =========================================================
+         GAME-WISE ANALYSIS
+         ========================================================= -->
+    <section class="ai-section">
+        <div class="ai-card">
+            <div class="ai-card-head">
+                <div>
+                    <h2>🎮 Game-wise Performance</h2>
+                    <p>How each cognitive game is contributing data to the profile.</p>
+                </div>
+            </div>
+
+            {% if analytics.games and analytics.games|length > 0 %}
+
+                <div style="overflow-x:auto;">
+                    <table class="game-table">
+                        <thead>
+                            <tr>
+                                <th>Game</th>
+                                <th>Sessions</th>
+                                <th>Avg Score</th>
+                                <th>Accuracy</th>
+                                <th>Avg Time</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {% for game_name, game in analytics.games.items() %}
+                                <tr>
+                                    <td>
+                                        <div class="game-name">
+                                            {{ game_name|replace('_',' ')|title }}
+                                        </div>
+                                    </td>
+
+                                    <td>
+                                        <span class="mini-pill">{{ game.sessions }}</span>
+                                    </td>
+
+                                    <td>{{ "%.1f"|format(game.average_score|default(0)) }}</td>
+
+                                    <td>
+                                        {% if game.latest_accuracy is not none %}
+                                            {{ "%.0f"|format(game.latest_accuracy) }}%
+                                        {% elif game.accuracy_sessions|default(0) > 0 %}
+                                            {{ "%.0f"|format(game.average_accuracy) }}%
+                                        {% else %}
+                                            —
+                                        {% endif %}
+                                    </td>
+
+                                    <td>
+                                        {{ "%.1f"|format(game.average_response_time|default(0)) }}s
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+            {% else %}
+
+                <div class="insight">
+                    <div class="insight-icon">🎮</div>
+                    <div>
+                        <p class="insight-title">No game data available</p>
+                        <p class="insight-message">
+                            Complete a cognitive game session to begin analysis.
+                        </p>
+                    </div>
+                </div>
+
+            {% endif %}
+        </div>
+    </section>
+
+    <!-- =========================================================
+         CLINICAL SAFETY / INTERPRETATION
+         ========================================================= -->
+    <section class="ai-section">
+        <div class="ai-disclaimer">
+            <strong>⚕️ Responsible AI notice:</strong>
+            AI-generated performance insights are intended to support caregiver
+            observation and longitudinal monitoring. They are not a medical
+            diagnosis and should not be used alone to diagnose dementia or any
+            other neurological condition. Clinical interpretation should consider
+            functional changes, caregiver observations, language, context and
+            professional assessment.
+        </div>
+    </section>
+
+    <!-- =========================================================
+         STEP 12 — PRINTABLE CAREGIVER COGNITIVE REPORT
+         ========================================================= -->
+    <section class="ai-print-report" aria-hidden="true">
+        <div class="report-header">
+            <h1>NER-Care — Caregiver Cognitive Report</h1>
+            <p>Longitudinal cognitive-game performance summary for caregiver review.</p>
+        </div>
+
+        <div class="report-grid">
+            <div class="report-box"><span class="report-label">Patient</span><span class="report-value">{{ patient['name'] }}</span></div>
+            <div class="report-box"><span class="report-label">Sessions</span><span class="report-value">{{ analytics.total_sessions }}</span></div>
+            <div class="report-box"><span class="report-label">AI Change Signal</span><span class="report-value">{{ analytics.signal }}</span></div>
+            <div class="report-box"><span class="report-label">Data Confidence</span><span class="report-value">{{ analytics.confidence.label|default('—') }}</span></div>
+            <div class="report-box"><span class="report-label">Recent Performance</span><span class="report-value">{{ "%.1f"|format(analytics.recent_score) }}</span></div>
+            <div class="report-box"><span class="report-label">Performance Change</span><span class="report-value">{{ "%.1f"|format(analytics.score_change) }}%</span></div>
+        </div>
+
+        <div class="report-section">
+            <h2>AI Context Summary</h2>
+            <p><strong>{{ context_summary.headline }}</strong></p>
+            <p>{{ context_summary.interpretation }}</p>
+            <p><strong>Suggested next step:</strong> {{ context_summary.action }}</p>
+        </div>
+
+        <div class="report-section">
+            <h2>Cognitive Domain Profile</h2>
+            <ul>
+                {% for domain_key in cognitive_domains %}
+                    {% set domain = analytics.domains.get(domain_key, {}) %}
+                    {% if domain.get('available') %}
+                        <li><strong>{{ domain_key|replace('_',' ')|title }}:</strong> {{ "%.0f"|format(domain.accuracy) }}% accuracy, {{ "%.1f"|format(domain.trend) }}% trend.</li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="report-section">
+            <h2>Personalized Practice Plan</h2>
+            <p><strong>Priority:</strong> {{ practice_plan.domain }}</p>
+            <p><strong>Recommended games:</strong> {{ practice_plan.games|join(', ') }}</p>
+            <p><strong>Session length:</strong> {{ practice_plan.duration }}</p>
+            <p>{{ practice_plan.instruction }}</p>
+        </div>
+
+        {% if observations %}
+        <div class="report-section">
+            <h2>Recent Caregiver Observations</h2>
+            <ul>
+                {% for observation in observations %}
+                    <li><strong>{{ observation['category'] }}</strong> — {{ observation['status']|title }}: {{ observation['note'] }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        <div class="report-footer">
+            AI-generated performance insights are intended to support caregiver observation and longitudinal monitoring. They are not a medical diagnosis and should not be used alone to diagnose dementia or another neurological condition.
+        </div>
+    </section>
+
+    <div class="ai-footer">
+        <span>
+            NER-Care • AI Cognitive Monitoring Workspace
+        </span>
+
+        <span class="ai-live">
+            <span class="ai-live-dot"></span>
+            Analytics engine connected
+        </span>
+    </div>
+
+</div>
+
+
+
+<script>
+async function saveObservation() {
+    const button = document.getElementById('observation-submit');
+    const message = document.getElementById('observation-message');
+    const category = document.getElementById('observation-category').value;
+    const status = document.getElementById('observation-status').value;
+    const note = document.getElementById('observation-note').value.trim();
+
+    if (!note) {
+        message.textContent = 'Please enter what you observed.';
+        return;
+    }
+
+    button.disabled = true;
+    message.textContent = 'Saving observation...';
+
+    try {
+        const response = await fetch('{{ url_for("caregiver_observations_api", patient_id=patient["id"]) }}', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({category, status, note})
+        });
+        const data = await response.json();
+        if (!response.ok || data.status !== 'ok') throw new Error(data.message || 'Unable to save observation');
+
+        renderObservations(data.observations);
+        document.getElementById('observation-note').value = '';
+        message.textContent = 'Observation saved.';
+    } catch (error) {
+        message.textContent = error.message;
+    } finally {
+        button.disabled = false;
+    }
+}
+
+function renderObservations(items) {
+    const list = document.getElementById('observation-list');
+    list.innerHTML = '';
+    if (!items || items.length === 0) {
+        list.innerHTML = '<div class="observation-empty">No caregiver observations recorded yet.<br>Use the form to add real-world context.</div>';
+        return;
+    }
+    items.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'observation-item';
+        const top = document.createElement('div');
+        top.className = 'observation-item-top';
+        const category = document.createElement('span');
+        category.className = 'observation-category';
+        category.textContent = item.category;
+        const date = document.createElement('span');
+        date.className = 'observation-date';
+        date.textContent = (item.observed_at || '').slice(0,16).replace('T',' ');
+        top.append(category, date);
+        const note = document.createElement('p');
+        note.className = 'observation-note';
+        note.textContent = item.note;
+        const badge = document.createElement('span');
+        badge.className = 'observation-status ' + item.status;
+        badge.textContent = (item.status || 'noted').replaceAll('_',' ');
+        card.append(top, note, badge);
+        list.appendChild(card);
+    });
+}
+
+function printCareReport() {
+    const report = document.querySelector('.ai-print-report');
+    if (!report) return;
+
+    report.classList.add('report-visible');
+    report.setAttribute('aria-hidden', 'false');
+
+    if (!report.querySelector('.report-screen-toolbar')) {
+        const toolbar = document.createElement('div');
+        toolbar.className = 'report-screen-toolbar';
+        toolbar.innerHTML = `
+            <div class="report-toolbar-title">NER-Care • Caregiver Report</div>
+            <div class="report-toolbar-actions">
+                <button type="button" onclick="window.print()">🖨️ Print / Save PDF</button>
+                <button type="button" class="report-close" onclick="closeCareReport()">✕ Close</button>
+            </div>
+        `;
+        report.prepend(toolbar);
+    }
+
+    document.body.classList.add('report-open');
+}
+
+function closeCareReport() {
+    const report = document.querySelector('.ai-print-report');
+    if (!report) return;
+
+    report.classList.remove('report-visible');
+    report.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('report-open');
+}
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const reportButton = document.querySelector(".ai-report-button");
+    if (reportButton) {
+        reportButton.addEventListener("click", function (event) {
+            event.preventDefault();
+            printCareReport();
+        });
+    }
+});
+</script>
+{% endblock %}

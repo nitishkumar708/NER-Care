@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block title %}Create NER-Care Account{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+    <div class="auth-card">
+        <div class="auth-header">
+            <div class="auth-icon">🧠</div>
+            <div>
+                <div class="auth-kicker">NER-CARE</div>
+                <h1>Create Account</h1>
+                <p>Create a secure caregiver or patient account.</p>
+            </div>
+        </div>
+
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="auth-alert">
+                    {% for message in messages %}<div>{{ message }}</div>{% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST" class="auth-form" id="registerForm">
+            <div class="role-switch">
+                <button type="button" class="role-option {% if selected_role != 'patient' %}active{% endif %}" data-role="caregiver">👨‍⚕️ Caregiver</button>
+                <button type="button" class="role-option {% if selected_role == 'patient' %}active{% endif %}" data-role="patient">👴 Patient</button>
+            </div>
+            <input type="hidden" name="role" id="roleInput" value="{{ selected_role or 'caregiver' }}">
+
+            <label>Full Name</label>
+            <input type="text" name="name" required autocomplete="name" placeholder="Enter full name">
+
+            <label>Email</label>
+            <input type="email" name="email" required autocomplete="email" placeholder="Enter email address">
+
+            <label>Password</label>
+            <input type="password" name="password" required minlength="8" autocomplete="new-password" placeholder="Minimum 8 characters">
+
+            <div id="caregiverFields" {% if selected_role == 'patient' %}style="display:none"{% endif %}>
+                <label>Phone (optional)</label>
+                <input type="tel" name="phone" autocomplete="tel" placeholder="Phone number">
+                <div class="auth-note">After registration, NER-Care will generate your unique caregiver code. You can use it to connect patients.</div>
+            </div>
+
+            <div id="patientFields" {% if selected_role != 'patient' %}style="display:none"{% endif %}>
+                <label>Age (optional)</label>
+                <input type="number" name="patient_age" min="1" max="120" placeholder="Patient age">
+
+                <label>Preferred Language</label>
+                <select name="language">
+                    <option value="en">English</option>
+                    <option value="hi">हिन्दी</option>
+                    <option value="as">অসমীয়া</option>
+                    <option value="bn">বাংলা</option>
+                    <option value="mni">মৈতৈলোন</option>
+                    <option value="kha">Khasi</option>
+                    <option value="lus">Mizo</option>
+                </select>
+
+                <label>Caregiver Code (optional)</label>
+                <input type="text" name="caregiver_code" maxlength="32" value="">
+                <div class="auth-note">If your caregiver gave you a code, enter it here. Your account will be linked automatically.</div>
+            </div>
+
+            <input type="hidden" name="invite_token" id="inviteToken" value="{{ invite_token or '' }}">
+
+            <button type="submit" class="auth-submit">Create Account →</button>
+        </form>
+
+        <div class="auth-footer">Already have an account? <a href="{{ url_for('login') }}">Log in</a></div>
+    </div>
+</div>
+
+<style>
+.auth-page{min-height:65vh;display:flex;justify-content:center;align-items:center;padding:20px 0 50px}
+.auth-card{width:min(560px,100%);background:#fff;border:1px solid #dce7ef;border-radius:22px;padding:30px;box-shadow:0 16px 45px rgba(20,55,80,.12)}
+.auth-header{display:flex;gap:16px;align-items:center;margin-bottom:24px}.auth-icon{width:58px;height:58px;border-radius:16px;background:#eaf7fb;display:flex;align-items:center;justify-content:center;font-size:29px}.auth-kicker{font-size:11px;font-weight:800;letter-spacing:1.5px;color:#0b7892}.auth-header h1{margin:3px 0;font-size:28px;color:#17324a}.auth-header p{margin:0;color:#637789}
+.auth-alert{background:#fff2f2;border:1px solid #f0c8c8;color:#9b3030;padding:12px 14px;border-radius:12px;margin-bottom:18px;font-size:14px}
+.auth-form{display:flex;flex-direction:column;gap:9px}.auth-form label{font-size:13px;font-weight:700;color:#385269;margin-top:6px}.auth-form input,.auth-form select{width:100%;box-sizing:border-box;padding:12px 13px;border:1px solid #cfdde7;border-radius:11px;font-size:14px;background:#fbfdff}.auth-form input:focus,.auth-form select:focus{outline:none;border-color:#149bb8;box-shadow:0 0 0 3px rgba(20,155,184,.1)}
+.role-switch{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:7px}.role-option{border:1px solid #cfdde7;background:#f7fafc;border-radius:12px;padding:12px;font-weight:800;color:#476074;cursor:pointer}.role-option.active{background:#e6f7fb;border-color:#119bb9;color:#0b667e}.auth-note{font-size:12px;line-height:1.5;color:#687b8a;background:#f5f9fb;border-radius:10px;padding:10px;margin-top:2px}.auth-submit{margin-top:12px;border:0;border-radius:12px;padding:13px;background:#0c7892;color:#fff;font-size:15px;font-weight:800;cursor:pointer;transition:transform .2s ease,box-shadow .2s ease}.auth-submit:hover{transform:translateY(-2px);box-shadow:0 9px 20px rgba(12,120,146,.22)}.auth-footer{text-align:center;margin-top:20px;color:#687b8a;font-size:14px}.auth-footer a{color:#087c99;font-weight:800;text-decoration:none}
+@media(max-width:560px){.auth-card{padding:22px;border-radius:18px}}
+</style>
+
+<script>
+(function(){
+    const roleInput=document.getElementById('roleInput');
+    const caregiverFields=document.getElementById('caregiverFields');
+    const patientFields=document.getElementById('patientFields');
+    const inviteToken=document.getElementById('inviteToken');
+    const buttons=document.querySelectorAll('.role-option');
+    function setRole(role){
+        roleInput.value=role;
+        buttons.forEach(b=>b.classList.toggle('active',b.dataset.role===role));
+        caregiverFields.style.display=role==='caregiver'?'block':'none';
+        patientFields.style.display=role==='patient'?'block':'none';
+    }
+    buttons.forEach(b=>b.addEventListener('click',()=>setRole(b.dataset.role)));
+    setRole(roleInput.value==='patient'?'patient':'caregiver');
+    if(inviteToken && inviteToken.value) setRole('patient');
+})();
+</script>
+{% endblock %}

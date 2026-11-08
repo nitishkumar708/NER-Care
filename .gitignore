@@ -1,0 +1,6 @@
+nercare.db
+nercare.db-wal
+nercare.db-shm
+.nercare_secret_key
+__pycache__/
+*.pyc

@@ -1,0 +1,498 @@
+{% extends "base.html" %}
+
+{% block title %}Object Recognition{% endblock %}
+
+{% block content %}
+
+<div class="game-page">
+
+    <h1>🔎 <span data-object-i18n="title">Object Recognition</span></h1>
+
+    <p class="game-intro" data-object-i18n="intro">
+        Look carefully and choose the object you see.
+    </p>
+
+    <p class="level-badge">
+        <span data-object-i18n="level">Level:</span>
+        <span id="level">{{ patient['difficulty_level'] }}</span>
+    </p>
+
+    <div class="routine-card object-game-card">
+
+        <h2 id="object-question" data-object-i18n="question">
+            Which object is this?
+        </h2>
+
+        <div id="object-display" class="object-display">
+            🥛
+        </div>
+
+        <div id="object-options" class="routine-options"></div>
+        <p id="progress" class="result-msg"></p>
+        <button id="next-btn" class="routine-option" style="display:none;margin:12px auto;"></button>
+
+        <p id="object-result" class="result-msg"></p>
+
+    </div>
+
+    <a
+        href="{{ url_for('patient_dashboard', patient_id=patient['id']) }}"
+        class="back-link"
+        data-object-i18n="backDashboard"
+    >
+        ⬅ Back to Dashboard
+    </a>
+
+</div>
+
+
+<script>
+
+const patientId = {{ patient['id'] }};
+const level = {{ patient['difficulty_level'] }};
+
+
+/* =========================================================
+   OBJECT RECOGNITION — PAGE TRANSLATION
+   Internal object names remain English so answer checking
+   continues to work safely. Only visible labels are translated.
+   ========================================================= */
+
+const OBJECT_TRANSLATIONS = {
+
+    en: {
+        title: "Object Recognition",
+        intro: "Look carefully and choose the object you see.",
+        level: "Level:",
+        question: "Which object is this?",
+        backDashboard: "⬅ Back to Dashboard",
+
+        objects: {
+            "Glass": "Glass",
+            "Cup": "Cup",
+            "Key": "Key",
+            "Mobile Phone": "Mobile Phone",
+            "Glasses": "Glasses",
+            "Apple": "Apple",
+            "Bottle": "Bottle",
+            "Umbrella": "Umbrella"
+        },
+
+        correct: "🎉 Excellent! You recognized the object.",
+        wrong: "Good try! The correct answer was "
+    },
+
+    hi: {
+        title: "वस्तु पहचान",
+        intro: "ध्यान से देखें और दिखाई देने वाली वस्तु चुनें।",
+        level: "स्तर:",
+        question: "यह कौन-सी वस्तु है?",
+        backDashboard: "⬅ डैशबोर्ड पर वापस जाएँ",
+
+        objects: {
+            "Glass": "गिलास",
+            "Cup": "कप",
+            "Key": "चाबी",
+            "Mobile Phone": "मोबाइल फोन",
+            "Glasses": "चश्मा",
+            "Apple": "सेब",
+            "Bottle": "बोतल",
+            "Umbrella": "छाता"
+        },
+
+        correct: "🎉 बहुत बढ़िया! आपने वस्तु को सही पहचाना।",
+        wrong: "अच्छी कोशिश! सही उत्तर था "
+    },
+
+    as: {
+        title: "বস্তু চিনাক্তকৰণ",
+        intro: "ভালদৰে চাওক আৰু দেখা পোৱা বস্তুটো বাছি লওক।",
+        level: "স্তৰ:",
+        question: "এইটো কোনটো বস্তু?",
+        backDashboard: "⬅ ডেশ্বব’ৰ্ডলৈ উভতি যাওক",
+
+        objects: {
+            "Glass": "গিলাচ",
+            "Cup": "কাপ",
+            "Key": "চাবি",
+            "Mobile Phone": "মোবাইল ফোন",
+            "Glasses": "চশমা",
+            "Apple": "আপেল",
+            "Bottle": "বটল",
+            "Umbrella": "ছাতি"
+        },
+
+        correct: "🎉 বৰ ভাল! আপুনি বস্তুটো সঠিকভাৱে চিনাক্ত কৰিছে।",
+        wrong: "ভাল চেষ্টা! সঠিক উত্তৰ আছিল "
+    },
+
+    bn: {
+        title: "বস্তু শনাক্তকরণ",
+        intro: "ভালো করে দেখুন এবং যে বস্তুটি দেখছেন সেটি বেছে নিন।",
+        level: "স্তর:",
+        question: "এটি কোন বস্তু?",
+        backDashboard: "⬅ ড্যাশবোর্ডে ফিরে যান",
+
+        objects: {
+            "Glass": "গ্লাস",
+            "Cup": "কাপ",
+            "Key": "চাবি",
+            "Mobile Phone": "মোবাইল ফোন",
+            "Glasses": "চশমা",
+            "Apple": "আপেল",
+            "Bottle": "বোতল",
+            "Umbrella": "ছাতা"
+        },
+
+        correct: "🎉 দারুণ! আপনি বস্তুটি সঠিকভাবে চিনেছেন।",
+        wrong: "ভালো চেষ্টা! সঠিক উত্তর ছিল "
+    },
+
+    mni: {
+        title: "বস্তু চিনাক্তকরণ",
+        intro: "ফজনা য়েংউ অমসুং নুংশিবা বস্তু অদু খনবিয়ু।",
+        level: "স্তর:",
+        question: "বস্তু অসি করিনো?",
+        backDashboard: "⬅ ড্যাশবোর্ডদা হন্না চঙশিনু",
+
+        objects: {
+            "Glass": "গ্লাস",
+            "Cup": "কাপ",
+            "Key": "চাবি",
+            "Mobile Phone": "মোবাইল ফোন",
+            "Glasses": "চশমা",
+            "Apple": "আপেল",
+            "Bottle": "বটল",
+            "Umbrella": "ছাতা"
+        },
+
+        correct: "🎉 ফজনা তৌরে! নহাক্না বস্তু অদু শুদ্ধ চিনাক্ত তৌরে।",
+        wrong: "ফজনা চেষ্টা তৌরে! শুদ্ধ উত্তর অদু "
+    },
+
+    kha: {
+        title: "Pynithuh ïa ka jingthaw",
+        intro: "Peit bha bad jied ïa ka jingthaw kaba phi iohi.",
+        level: "Kyrdan:",
+        question: "Kaei kane ka jingthaw?",
+        backDashboard: "⬅ Leitphai sha Dashboard",
+
+        objects: {
+            "Glass": "Kyrteng",
+            "Cup": "Kop",
+            "Key": "Shabi",
+            "Mobile Phone": "Mobile Phone",
+            "Glasses": "Khmie",
+            "Apple": "Apple",
+            "Bottle": "Botol",
+            "Umbrella": "Sat"
+        },
+
+        correct: "🎉 Bha shibun! Phi la ithuh hok ïa ka jingthaw.",
+        wrong: "Ka jingpyrshang ka bha! Ka jubab kaba dei ka long "
+    },
+
+    lus: {
+        title: "Thil hriat chhuah",
+        intro: "Fiah takin en la, i hmuh thil chu thlang rawh.",
+        level: "Level:",
+        question: "He thil nge hei?",
+        backDashboard: "⬅ Dashboard-ah kir leh",
+
+        objects: {
+            "Glass": "Glass",
+            "Cup": "Cup",
+            "Key": "Key",
+            "Mobile Phone": "Mobile Phone",
+            "Glasses": "Khawtaw",
+            "Apple": "Apple",
+            "Bottle": "Bottle",
+            "Umbrella": "Thirmum"
+        },
+
+        correct: "🎉 Tha! I hmuh thil chu i hriat chhuak dik.",
+        wrong: "Bei na a tha! Chhanna dik chu "
+    }
+};
+
+
+function getObjectLanguage() {
+
+    const saved =
+        localStorage.getItem("nercare_language") || "en";
+
+    return OBJECT_TRANSLATIONS[saved]
+        ? saved
+        : "en";
+}
+
+
+function getObjectDictionary() {
+
+    return OBJECT_TRANSLATIONS[
+        getObjectLanguage()
+    ];
+}
+
+
+function translateObjectName(name) {
+
+    const dict =
+        getObjectDictionary();
+
+    return (
+        dict.objects[name] ||
+        OBJECT_TRANSLATIONS.en.objects[name] ||
+        name
+    );
+}
+
+
+function applyObjectLanguage() {
+
+    const dict =
+        getObjectDictionary();
+
+    document
+        .querySelectorAll("[data-object-i18n]")
+        .forEach(function (element) {
+
+            const key =
+                element.getAttribute(
+                    "data-object-i18n"
+                );
+
+            if (dict[key]) {
+                element.textContent =
+                    dict[key];
+            }
+
+        });
+
+    document.title =
+        dict.title;
+}
+
+
+/* =========================================================
+   FAMILIAR EVERYDAY OBJECTS
+   ========================================================= */
+
+const objects = [
+
+    {
+        emoji: "🥛",
+        name: "Glass"
+    },
+
+    {
+        emoji: "☕",
+        name: "Cup"
+    },
+
+    {
+        emoji: "🔑",
+        name: "Key"
+    },
+
+    {
+        emoji: "📱",
+        name: "Mobile Phone"
+    },
+
+    {
+        emoji: "🕶️",
+        name: "Glasses"
+    },
+
+    {
+        emoji: "🍎",
+        name: "Apple"
+    },
+
+    {
+        emoji: "🧴",
+        name: "Bottle"
+    },
+
+    {
+        emoji: "☂️",
+        name: "Umbrella"
+    }
+
+];
+
+
+
+const TOTAL_QUESTIONS = 5;
+
+/* Extra labels for the round system. Languages without a verified
+   translation fall back to English. */
+const ROUND_TEXT = {
+    en:  { question: "Question", next: "Next ➜", done: "Round complete! Score:", again: "Play again", saving: "Saving your result..." },
+    hi:  { question: "प्रश्न", next: "अगला ➜", done: "राउंड पूरा! स्कोर:", again: "फिर खेलें", saving: "परिणाम सहेजा जा रहा है..." },
+    as:  { question: "প্ৰশ্ন", next: "পৰৱৰ্তী ➜", done: "ৰাউণ্ড সম্পূৰ্ণ! স্ক'ৰ:", again: "পুনৰ খেলক", saving: "ফলাফল সাঁচি থকা হৈছে..." },
+    bn:  { question: "প্রশ্ন", next: "পরবর্তী ➜", done: "রাউন্ড সম্পূর্ণ! স্কোর:", again: "আবার খেলুন", saving: "ফলাফল সংরক্ষণ হচ্ছে..." }
+};
+
+function roundText(key) {
+    const lang = getObjectLanguage();
+    return (ROUND_TEXT[lang] || ROUND_TEXT.en)[key] || ROUND_TEXT.en[key];
+}
+
+let questionNumber = 0;
+let correctCount = 0;
+let roundStartedAt = Date.now();
+let questionAnswered = false;
+let roundSubmitted = false;
+
+let correctObject = null;
+let lastObjectName = null;
+
+/* =========================================================
+   BUILD ONE QUESTION
+   Higher levels show more answer choices (3 -> 4 -> 5).
+   ========================================================= */
+function loadQuestion() {
+
+    questionNumber++;
+    questionAnswered = false;
+
+    document.getElementById("progress").textContent =
+        roundText("question") + " " + questionNumber + " / " + TOTAL_QUESTIONS;
+    document.getElementById("object-result").textContent = "";
+    document.getElementById("next-btn").style.display = "none";
+
+    let candidate, guard = 0;
+    do {
+        candidate = objects[Math.floor(Math.random() * objects.length)];
+        guard++;
+    } while (candidate.name === lastObjectName && guard < 20);
+
+    correctObject = candidate;
+    lastObjectName = candidate.name;
+
+    document.getElementById("object-display").textContent = correctObject.emoji;
+
+    const choiceCount = level >= 5 ? 5 : (level >= 3 ? 4 : 3);
+    const others = objects
+        .filter(o => o.name !== correctObject.name)
+        .sort(() => Math.random() - 0.5)
+        .slice(0, choiceCount - 1)
+        .map(o => o.name);
+
+    const options = [correctObject.name].concat(others);
+    options.sort(() => Math.random() - 0.5);
+
+    const optionsContainer = document.getElementById("object-options");
+    optionsContainer.innerHTML = "";
+
+    options.forEach(option => {
+        const button = document.createElement("button");
+        button.className = "routine-option";
+        button.textContent = translateObjectName(option);
+        button.dataset.objectName = option;
+        button.onclick = () => checkObjectAnswer(option, button);
+        optionsContainer.appendChild(button);
+    });
+}
+
+
+/* =========================================================
+   CHECK ANSWER
+   ========================================================= */
+function checkObjectAnswer(answer, button) {
+
+    if (questionAnswered) { return; }
+    questionAnswered = true;
+
+    const buttons = document.querySelectorAll("#object-options .routine-option");
+    buttons.forEach(btn => { btn.disabled = true; });
+
+    const resultElement = document.getElementById("object-result");
+
+    if (answer === correctObject.name) {
+        correctCount++;
+        button.classList.add("correct");
+        resultElement.textContent = getObjectDictionary().correct;
+    } else {
+        button.classList.add("wrong");
+        buttons.forEach(btn => {
+            if (btn.dataset.objectName === correctObject.name) {
+                btn.classList.add("correct");
+            }
+        });
+        resultElement.textContent =
+            getObjectDictionary().wrong + translateObjectName(correctObject.name);
+    }
+
+    const nextButton = document.getElementById("next-btn");
+    nextButton.style.display = "block";
+
+    if (questionNumber < TOTAL_QUESTIONS) {
+        nextButton.textContent = roundText("next");
+        nextButton.onclick = loadQuestion;
+    } else {
+        finishRound();
+    }
+}
+
+
+/* =========================================================
+   END OF ROUND: SEND ONE RESULT TO THE ADAPTIVE ENGINE
+   One round (5 questions) = one session in the analytics.
+   ========================================================= */
+function finishRound() {
+
+    const nextButton = document.getElementById("next-btn");
+    nextButton.textContent = roundText("again");
+    nextButton.onclick = () => window.location.reload();
+
+    document.getElementById("progress").textContent =
+        roundText("done") + " " + correctCount + " / " + TOTAL_QUESTIONS;
+
+    if (roundSubmitted) { return; }
+    roundSubmitted = true;
+
+    const secondsTaken = Math.max(1, (Date.now() - roundStartedAt) / 1000);
+
+    fetch("/api/submit-score", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            patient_id: patientId,
+            game_name: "object_recognition",
+            score: correctCount,
+            max_score: TOTAL_QUESTIONS,
+            accuracy: correctCount / TOTAL_QUESTIONS,
+            errors: TOTAL_QUESTIONS - correctCount,
+            hints_used: 0,
+            completion_status: "completed",
+            time_taken_seconds: secondsTaken,
+            expected_time_seconds: TOTAL_QUESTIONS * 10,
+            domains: ["memory", "visuospatial"],
+            metrics: { questions: TOTAL_QUESTIONS, level: level }
+        })
+    }).catch(function (error) {
+        console.warn("Score could not be saved:", error);
+    });
+}
+
+
+/* =========================================================
+   APPLY LANGUAGE
+   ========================================================= */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+        applyObjectLanguage();
+        loadQuestion();
+
+    }
+);
+
+</script>
+
+{% endblock %}

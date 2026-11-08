@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}Caregiver Home · NER-Care{% endblock %}
+
+{% block content %}
+
+<style>
+.caregiver-workspace{max-width:1080px;margin:0 auto;padding:8px 0 18px}
+.workspace-hero{text-align:center;margin-bottom:14px}
+.workspace-kicker{display:inline-block;font-size:10px;font-weight:800;letter-spacing:1.6px;color:#1769aa;margin-bottom:4px}
+.workspace-hero h1{margin:0;font-size:clamp(25px,3.2vw,34px);line-height:1.12;color:#17324d}
+.workspace-hero p{max-width:760px;margin:7px auto 0;color:#617286;font-size:13px;line-height:1.4}
+.workspace-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:12px}
+.workspace-card{position:relative;display:flex;flex-direction:column;min-height:145px;padding:17px 20px;border-radius:18px;text-decoration:none;background:#fff;border:1px solid #e4ebf2;box-shadow:0 8px 22px rgba(24,54,82,.07);transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease;overflow:hidden}
+.workspace-card::after{content:"";position:absolute;width:80px;height:80px;right:-25px;top:-25px;border-radius:50%;background:rgba(23,105,170,.06)}
+.workspace-card:hover{transform:translateY(-3px) scale(1.01);box-shadow:0 13px 28px rgba(24,54,82,.12);border-color:rgba(23,105,170,.30)}
+.workspace-icon{width:43px;height:43px;display:grid;place-items:center;border-radius:12px;background:#eef6fc;font-size:21px;margin-bottom:10px}
+.workspace-card h2{margin:0 0 5px;color:#17324d;font-size:18px;line-height:1.2}
+.workspace-card p{margin:0;color:#6a7b8d;line-height:1.4;font-size:12.5px;max-width:470px}
+.workspace-action{margin-top:auto;padding-top:9px;color:#1769aa;font-weight:800;font-size:12px}
+.validation-card{border-color:rgba(119,82,170,.18);background:linear-gradient(145deg,#fff,#faf8ff)}
+.validation-card .workspace-icon{background:#f1ebff}
+.validation-card:hover{border-color:rgba(119,82,170,.38)}
+.validation-card .workspace-action{color:#6f4bb5}
+.workspace-footer-note{margin-top:10px;padding:8px 14px;border-radius:11px;background:#f6f9fc;color:#6c7b8b;text-align:center;font-size:11px}
+@media(max-width:720px){.workspace-grid{grid-template-columns:1fr}.workspace-card{min-height:135px}}
+</style>
+
+<div class="caregiver-workspace">
+
+    <section class="workspace-hero">
+        <div class="workspace-kicker">CAREGIVER WORKSPACE</div>
+        <h1>Welcome, {{ caregiver["name"] }}</h1>
+        <p>
+            Patient management, performance monitoring, and system validation
+            are available directly from your workspace.
+        </p>
+    </section>
+
+    <section class="workspace-grid">
+
+        <a href="{{ url_for('home') }}" class="workspace-card">
+            <div class="workspace-icon">🏠</div>
+            <h2>Home</h2>
+            <p>Return to the main NER-Care landing page and role selection.</p>
+            <div class="workspace-action">Open Home →</div>
+        </a>
+
+        <a href="{{ url_for('caregiver_dashboard', caregiver_id=caregiver['id']) }}"
+           class="workspace-card">
+            <div class="workspace-icon">📊</div>
+            <h2>Dashboard</h2>
+            <p>Review caregiver-level patient activity and performance trends.</p>
+            <div class="workspace-action">Open Dashboard →</div>
+        </a>
+
+        <a href="{{ url_for('caregiver_patients', caregiver_id=caregiver['id']) }}"
+           class="workspace-card">
+            <div class="workspace-icon">👥</div>
+            <h2>My Patients</h2>
+            <p>View connected patients, profiles, and patient care information.</p>
+            <div class="workspace-action">View My Patients →</div>
+        </a>
+
+        <a href="{{ url_for('caregiver_game_validation', caregiver_id=caregiver['id']) }}"
+           class="workspace-card validation-card">
+            <div class="workspace-icon">🧪</div>
+            <h2>Game Validation Center</h2>
+            <p>Test cognitive games and validate the performance pipeline separately.</p>
+            <div class="workspace-action">Open Validation Center →</div>
+        </a>
+
+    </section>
+
+    <div class="workspace-footer-note">
+        Settings, Help &amp; Support, and Logout remain inside the ☰ account menu.
+    </div>
+
+</div>
+
+{% endblock %}

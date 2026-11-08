@@ -1,0 +1,405 @@
+{% extends "base.html" %}
+
+{% block title %}NER-Care - AI Cognitive Care{% endblock %}
+
+{% block content %}
+
+<div class="hero">
+
+    <div class="hero-label" data-i18n="heroLabel">
+        AI-POWERED COGNITIVE CARE
+    </div>
+
+    <h1 data-i18n="heroTitle">
+        Better Cognitive Care,<br>
+        One Day at a Time.
+    </h1>
+
+    <p class="subtitle" data-i18n="heroSubtitle">
+        NER-Care provides engaging cognitive activities,
+        memory support, and personalized assistance designed
+        for elderly users and their caregivers.
+    </p>
+
+
+    <div class="big-button-grid">
+
+        <!-- ========================================================= -->
+        <!-- PATIENT BUTTON -->
+        <!-- ========================================================= -->
+
+        {% if logged_in_user and logged_in_user["role"] == "patient" and logged_in_user["patient_id"] %}
+
+        <!-- Logged-in patient → open THEIR OWN patient dashboard -->
+        <a href="{{ url_for('patient_dashboard', patient_id=logged_in_user['patient_id']) }}"
+           class="big-button patient-btn">
+
+            <span>👴</span>
+
+            <span data-i18n="patientButton">
+                I am a Patient
+            </span>
+
+        </a>
+
+        {% else %}
+
+        <!-- Caregiver / guest → show appropriate access notice -->
+        <a href="{{ url_for('access_notice', requested_role='patient') }}"
+           class="big-button patient-btn">
+
+            <span>👴</span>
+
+            <span data-i18n="patientButton">
+                I am a Patient
+            </span>
+
+        </a>
+
+        {% endif %}
+
+
+        <!-- ========================================================= -->
+        <!-- CAREGIVER BUTTON -->
+        <!-- ========================================================= -->
+
+        {% if logged_in_user and logged_in_user["role"] == "caregiver" and logged_in_user["caregiver_id"] %}
+
+        <!-- Logged-in caregiver → open caregiver workspace -->
+        <a href="{{ url_for('caregiver_home', caregiver_id=logged_in_user['caregiver_id']) }}"
+           class="big-button caregiver-btn">
+
+        {% else %}
+
+        <!-- Patient / guest → show appropriate access notice -->
+        <a href="{{ url_for('access_notice', requested_role='caregiver') }}"
+           class="big-button caregiver-btn">
+
+        {% endif %}
+
+            <span>👩‍⚕️</span>
+
+            <span data-i18n="caregiverButton">
+                I am a Caregiver
+            </span>
+
+        </a>
+
+    </div>
+
+
+    <p class="demo-note" data-i18n="demoNote">
+        Demo mode · Explore NER-Care's cognitive care platform
+    </p>
+
+</div>
+
+
+
+<section class="features-section">
+
+    <div class="section-heading">
+
+        <span class="section-label" data-i18n="sectionLabel">
+            THE NER-CARE APPROACH
+        </span>
+
+        <h2 data-i18n="sectionTitle">
+            Designed around cognitive well-being
+        </h2>
+
+        <p data-i18n="sectionSubtitle">
+            Simple tools that encourage memory, attention,
+            engagement, and everyday independence.
+        </p>
+
+    </div>
+
+
+    <div class="feature-grid">
+
+        <!-- MEMORY -->
+
+        <a href="{{ url_for('memory_match', patient_id=1) }}"
+           class="feature-card">
+
+            <div class="feature-icon">
+                🧠
+            </div>
+
+            <h3 data-i18n="memoryTitle">
+                Memory Training
+            </h3>
+
+            <p data-i18n="memoryDescription">
+                Interactive activities designed to
+                encourage memory and recall.
+            </p>
+
+            <span class="feature-action" data-i18n="memoryAction">
+                Play Memory Match →
+            </span>
+
+        </a>
+
+
+        <!-- FOCUS -->
+
+        <a href="{{ url_for('pattern_recognition', patient_id=1) }}"
+           class="feature-card">
+
+            <div class="feature-icon">
+                🎯
+            </div>
+
+            <h3 data-i18n="focusTitle">
+                Focus & Attention
+            </h3>
+
+            <p data-i18n="focusDescription">
+                Engaging cognitive exercises that
+                encourage attention and concentration.
+            </p>
+
+            <span class="feature-action" data-i18n="focusAction">
+                Try Pattern Recognition →
+            </span>
+
+        </a>
+
+
+        <!-- DAILY ASSISTANCE -->
+
+        <a href="{{ url_for('patient_dashboard', patient_id=1) }}"
+           class="feature-card">
+
+            <div class="feature-icon">
+                ⏰
+            </div>
+
+            <h3 data-i18n="dailyTitle">
+                Daily Assistance
+            </h3>
+
+            <p data-i18n="dailyDescription">
+                Helpful reminders for medicines,
+                hydration, activities, and appointments.
+            </p>
+
+            <span class="feature-action" data-i18n="dailyAction">
+                View Daily Reminders →
+            </span>
+
+        </a>
+
+    </div>
+
+</section>
+
+
+
+<script>
+
+const translations = {
+
+    en: {
+        heroLabel: "AI-POWERED COGNITIVE CARE",
+        heroTitle: "Better Cognitive Care,<br>One Day at a Time.",
+        heroSubtitle: "NER-Care provides engaging cognitive activities, memory support, and personalized assistance designed for elderly users and their caregivers.",
+        patientButton: "I am a Patient",
+        caregiverButton: "I am a Caregiver",
+        demoNote: "Demo mode · Explore NER-Care's cognitive care platform",
+        sectionLabel: "THE NER-CARE APPROACH",
+        sectionTitle: "Designed around cognitive well-being",
+        sectionSubtitle: "Simple tools that encourage memory, attention, engagement, and everyday independence.",
+        memoryTitle: "Memory Training",
+        memoryDescription: "Interactive activities designed to encourage memory and recall.",
+        memoryAction: "Play Memory Match →",
+        focusTitle: "Focus & Attention",
+        focusDescription: "Engaging cognitive exercises that encourage attention and concentration.",
+        focusAction: "Try Pattern Recognition →",
+        dailyTitle: "Daily Assistance",
+        dailyDescription: "Helpful reminders for medicines, hydration, activities, and appointments.",
+        dailyAction: "View Daily Reminders →"
+    },
+
+    hi: {
+        heroLabel: "AI-संचालित संज्ञानात्मक देखभाल",
+        heroTitle: "बेहतर संज्ञानात्मक देखभाल,<br>हर दिन एक नई शुरुआत।",
+        heroSubtitle: "NER-Care बुजुर्गों और उनके देखभालकर्ताओं के लिए याददाश्त, ध्यान और दैनिक सहायता से जुड़ी सरल और उपयोगी गतिविधियाँ प्रदान करता है।",
+        patientButton: "मैं एक मरीज हूँ",
+        caregiverButton: "मैं एक देखभालकर्ता हूँ",
+        demoNote: "डेमो मोड · NER-Care की संज्ञानात्मक देखभाल प्रणाली देखें",
+        sectionLabel: "NER-CARE की कार्यप्रणाली",
+        sectionTitle: "संज्ञानात्मक स्वास्थ्य को ध्यान में रखकर बनाया गया",
+        sectionSubtitle: "सरल उपकरण जो याददाश्त, ध्यान, सहभागिता और दैनिक स्वतंत्रता को बढ़ावा देते हैं।",
+        memoryTitle: "याददाश्त प्रशिक्षण",
+        memoryDescription: "याददाश्त और स्मरण शक्ति को बढ़ाने वाली इंटरैक्टिव गतिविधियाँ।",
+        memoryAction: "मेमोरी मैच खेलें →",
+        focusTitle: "ध्यान और एकाग्रता",
+        focusDescription: "ध्यान और एकाग्रता को बढ़ावा देने वाले मनोरंजक संज्ञानात्मक अभ्यास।",
+        focusAction: "पैटर्न पहचान आज़माएँ →",
+        dailyTitle: "दैनिक सहायता",
+        dailyDescription: "दवाइयों, पानी, गतिविधियों और अपॉइंटमेंट के लिए उपयोगी रिमाइंडर।",
+        dailyAction: "दैनिक रिमाइंडर देखें →"
+    },
+
+    as: {
+        heroLabel: "AI-চালিত জ্ঞানীয় যত্ন",
+        heroTitle: "উন্নত জ্ঞানীয় যত্ন,<br>প্ৰতিদিনে এক নতুন আৰম্ভণি।",
+        heroSubtitle: "NER-Care-এ বয়োজ্যেষ্ঠ ব্যক্তি আৰু তেওঁলোকৰ যত্ন লোৱা লোকৰ বাবে স্মৃতি, মনোযোগ আৰু দৈনন্দিন সহায়ৰ বাবে সহজ আৰু উপযোগী কাৰ্যকলাপ প্ৰদান কৰে।",
+        patientButton: "মই এজন ৰোগী",
+        caregiverButton: "মই এজন যত্ন লোৱা ব্যক্তি",
+        demoNote: "ডেমো মোড · NER-Care-ৰ জ্ঞানীয় যত্ন ব্যৱস্থা অন্বেষণ কৰক",
+        sectionLabel: "NER-CARE পদ্ধতি",
+        sectionTitle: "জ্ঞানীয় সুস্থতাক কেন্দ্ৰ কৰি নিৰ্মিত",
+        sectionSubtitle: "স্মৃতি, মনোযোগ, অংশগ্ৰহণ আৰু দৈনন্দিন স্বাধীনতা বৃদ্ধি কৰা সহজ সঁজুলি।",
+        memoryTitle: "স্মৃতি প্ৰশিক্ষণ",
+        memoryDescription: "স্মৃতি আৰু মনত পেলোৱাৰ ক্ষমতা উন্নত কৰিবলৈ ইণ্টাৰেক্টিভ কাৰ্যকলাপ।",
+        memoryAction: "মেমৰি মেচ খেলক →",
+        focusTitle: "মনোযোগ আৰু একাগ্ৰতা",
+        focusDescription: "মনোযোগ আৰু একাগ্ৰতা বৃদ্ধি কৰা জ্ঞানীয় ব্যায়াম।",
+        focusAction: "পেটাৰ্ণ চিনাক্তকৰণ চেষ্টা কৰক →",
+        dailyTitle: "দৈনন্দিন সহায়",
+        dailyDescription: "ঔষধ, পানী, কাৰ্যকলাপ আৰু এপইণ্টমেণ্টৰ বাবে সহায়ক ৰিমাইণ্ডাৰ।",
+        dailyAction: "দৈনন্দিন ৰিমাইণ্ডাৰ চাওক →"
+    },
+
+    bn: {
+        heroLabel: "AI-চালিত জ্ঞানীয় যত্ন",
+        heroTitle: "উন্নত জ্ঞানীয় যত্ন,<br>প্রতিদিন একটি নতুন শুরু।",
+        heroSubtitle: "NER-Care বয়স্ক ব্যক্তি এবং তাদের যত্নকারীদের জন্য স্মৃতি, মনোযোগ ও দৈনন্দিন সহায়তার সহজ ও কার্যকর কার্যক্রম প্রদান করে।",
+        patientButton: "আমি একজন রোগী",
+        caregiverButton: "আমি একজন যত্নকারী",
+        demoNote: "ডেমো মোড · NER-Care-এর জ্ঞানীয় যত্ন ব্যবস্থা দেখুন",
+        sectionLabel: "NER-CARE পদ্ধতি",
+        sectionTitle: "জ্ঞানীয় সুস্থতাকে কেন্দ্র করে তৈরি",
+        sectionSubtitle: "স্মৃতি, মনোযোগ, অংশগ্রহণ এবং দৈনন্দিন স্বাধীনতা বাড়ানোর সহজ সরঞ্জাম।",
+        memoryTitle: "স্মৃতি প্রশিক্ষণ",
+        memoryDescription: "স্মৃতি ও মনে রাখার ক্ষমতা বাড়ানোর জন্য ইন্টারঅ্যাক্টিভ কার্যক্রম।",
+        memoryAction: "মেমরি ম্যাচ খেলুন →",
+        focusTitle: "মনোযোগ ও একাগ্রতা",
+        focusDescription: "মনোযোগ ও একাগ্রতা বাড়ানোর জন্য আকর্ষণীয় জ্ঞানীয় অনুশীলন।",
+        focusAction: "প্যাটার্ন চিনুন →",
+        dailyTitle: "দৈনন্দিন সহায়তা",
+        dailyDescription: "ওষুধ, পানি, কার্যক্রম এবং অ্যাপয়েন্টমেন্টের জন্য সহায়ক রিমাইন্ডার।",
+        dailyAction: "দৈনিক রিমাইন্ডার দেখুন →"
+    },
+
+    mni: {
+        heroLabel: "AI-চালিত জ্ঞানীয় যত্ন",
+        heroTitle: "উন্নত জ্ঞানীয় যত্ন,<br>প্রতিদিন নতুন সূচনা।",
+        heroSubtitle: "NER-Care বয়স্ক ব্যক্তি ও তাদের যত্নকারীদের জন্য স্মৃতি, মনোযোগ এবং দৈনন্দিন সহায়তার কার্যক্রম প্রদান করে।",
+        patientButton: "ঐখোং রোগী অমা নি",
+        caregiverButton: "ঐখোং যত্নকারী অমা নি",
+        demoNote: "ডেমো মোড · NER-Care-গী জ্ঞানীয় যত্ন ব্যবস্থা দেখৌ",
+        sectionLabel: "NER-CARE পদ্ধতি",
+        sectionTitle: "জ্ঞানীয় সুস্থতাগী মতাংদা শেমগৎপা",
+        sectionSubtitle: "স্মৃতি, মনোযোগ, অংশগ্রহণ এবং দৈনন্দিন স্বাধীনতা উন্নত করার সরল সরঞ্জাম।",
+        memoryTitle: "স্মৃতি প্রশিক্ষণ",
+        memoryDescription: "স্মৃতি ও মনে রাখার ক্ষমতা উন্নত করার ইন্টারঅ্যাক্টিভ কার্যক্রম।",
+        memoryAction: "মেমরি ম্যাচ খেলৌ →",
+        focusTitle: "মনোযোগ ও একাগ্রতা",
+        focusDescription: "মনোযোগ এবং একাগ্রতা উন্নত করার জ্ঞানীয় অনুশীলন।",
+        focusAction: "প্যাটার্ন চিনাক্ত করৌ →",
+        dailyTitle: "দৈনন্দিন সহায়তা",
+        dailyDescription: "ওষুধ, পানি, কার্যক্রম এবং অ্যাপয়েন্টমেন্টের জন্য রিমাইন্ডার।",
+        dailyAction: "দৈনিক রিমাইন্ডার দেখৌ →"
+    },
+
+    kha: {
+        heroLabel: "AI JINGÏAR KA JINGPYNIM",
+        heroTitle: "Ka jingsumar kaba kham bha,<br>man ka sngi ka long ka jingsdang thymmai.",
+        heroSubtitle: "NER-Care ka ai ki kam kiba pynshlur ïa ka jingkynmaw, jingmut bad jingïarap ha ka jingim ba man ka sngi na ka bynta ki tymmen bad ki nongsumar jong ki.",
+        patientButton: "Nga dei u nongpang",
+        caregiverButton: "Nga dei u nongsumar",
+        demoNote: "Demo mode · Peit ïa ka rukom jingsumar jong NER-Care",
+        sectionLabel: "KA RUKOM TREI NER-CARE",
+        sectionTitle: "La thaw ban pynbha ïa ka jingmut",
+        sectionSubtitle: "Ki tiar kiba suk ban pynshlur ïa ka jingkynmaw, jingmut bad ka jinglaitluid ha ka jingim man ka sngi.",
+        memoryTitle: "Ka jinghikai kynmaw",
+        memoryDescription: "Ki kam kiba jingïarap ban pynbha ïa ka jingkynmaw bad ban kynmaw biang.",
+        memoryAction: "Leit kheiñ Memory Match →",
+        focusTitle: "Jingmut bad jingpyrkhat",
+        focusDescription: "Ki jinghikai kiba pynshlur ïa ka jingmut bad jingpyrkhat.",
+        focusAction: "Pyrshang Pattern Recognition →",
+        dailyTitle: "Jingïarap man ka sngi",
+        dailyDescription: "Ki jingpynkynmaw na ka bynta ki dawai, um, ki kam bad ki appointment.",
+        dailyAction: "Peit ïa ki jingpynkynmaw →"
+    },
+
+    lus: {
+        heroLabel: "AI-THLILCHHUAHNA",
+        heroTitle: "Thilchhuahna tha zawk,<br>Nikhat tinah thil thar kan tan.",
+        heroSubtitle: "NER-Care chuan upa te leh an enkawltu te tan rilru, ngaihtuahna leh nitin nun enkawltu tur thil hmanruate a pe.",
+        patientButton: "Kei hi damlo ka ni",
+        caregiverButton: "Kei hi enkawltu ka ni",
+        demoNote: "Demo mode · NER-Care thilchhuahna system en rawh",
+        sectionLabel: "NER-CARE DAN",
+        sectionTitle: "Rilru damna ngaihtuah chungin siam",
+        sectionSubtitle: "Hriatna, ngaihtuahna, telna leh nitin nun thlahlelna tur thil hmanrua awlsam.",
+        memoryTitle: "Hriatna zirna",
+        memoryDescription: "Hriatna leh thil hriat rengna tihlenna tur interactive thil tih.",
+        memoryAction: "Memory Match chhu rawh →",
+        focusTitle: "Ngaihtuahna leh rilru",
+        focusDescription: "Ngaihtuahna leh rilru tihlenna tur cognitive exercise.",
+        focusAction: "Pattern Recognition en rawh →",
+        dailyTitle: "Nitin nun enkawlna",
+        dailyDescription: "Dawt, tui, thil tih leh appointment te hriat rengna tur reminder.",
+        dailyAction: "Nitin reminder en rawh →"
+    }
+
+};
+
+
+function applyLanguage(language) {
+
+    const selectedLanguage =
+        translations[language] ? language : "en";
+
+    document
+        .querySelectorAll("[data-i18n]")
+        .forEach(element => {
+
+            const key =
+                element.getAttribute("data-i18n");
+
+            if (translations[selectedLanguage][key]) {
+
+                element.innerHTML =
+                    translations[selectedLanguage][key];
+
+            }
+
+        });
+
+}
+
+
+const savedLanguage =
+    localStorage.getItem("nercare_language") || "en";
+
+applyLanguage(savedLanguage);
+
+
+const languageSelect =
+    document.getElementById("languageSelect");
+
+if (languageSelect) {
+
+    languageSelect.addEventListener("change", function () {
+
+        localStorage.setItem(
+            "nercare_language",
+            this.value
+        );
+
+        applyLanguage(this.value);
+
+    });
+
+}
+
+</script>
+
+{% endblock %}

@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}NER-Care{% endblock %}</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+
+<header class="topbar">
+
+    <div class="logo-area">
+    {% if request.endpoint != 'home' %}
+<button
+    type="button"
+    class="back-arrow"
+    onclick="goBack()"
+    aria-label="Go back" data-i18n-attr="aria-label" data-i18n-key="goBack"
+>
+    <span class="arrow-icon"></span>
+</button>
+{% endif %}
+
+    <a href="{{ url_for('home') }}" class="logo">
+        <span class="logo-icon">🧠</span>
+        <span>NER-Care</span>
+    </a>
+    </div>
+
+    <nav class="main-nav">
+        <a href="{{ url_for('home') }}" class="nav-link" data-i18n="navHome">Home</a>
+
+        <a href="{{ url_for('patient_dashboard', patient_id=1) }}"
+           class="nav-link">
+            <span data-i18n="navCognitive">Cognitive Care</span>
+        </a>
+
+        <a href="{{ url_for('caregiver_dashboard', caregiver_id=1) }}"
+           class="nav-link">
+            <span data-i18n="navCaregiver">Caregiver</span>
+        </a>
+    </nav>
+
+    <div class="header-tools">
+        <div class="voice-controls">
+
+    <button id="voiceButton"
+            class="voice-button"
+            type="button">
+        🔊 <span data-i18n="readAloud">Read Aloud</span>
+    </button>
+
+    <button id="stopVoiceButton"
+            class="voice-button stop-voice-button"
+            type="button">
+        ⏹ <span data-i18n="stop">Stop</span>
+    </button>
+
+</div>
+
+        <div class="language-selector">
+            <span>🌐</span>
+
+            <select id="languageSelect">
+                <option value="en">English</option>
+                <option value="hi">हिन्दी</option>
+                <option value="as">অসমীয়া</option>
+                <option value="bn">বাংলা</option>
+                <option value="mni">মৈতৈলোন</option>
+                <option value="kha">Khasi</option>
+                <option value="lus">Mizo</option>
+            </select>
+        </div>
+
+        <div class="header-tagline">
+            <span data-i18n="tagline">AI Cognitive Care</span>
+        </div>
+
+        <!-- =========================================================
+             NER-Care — ACCOUNT MENU
+             Role-aware hamburger menu for logged-in users.
+             ========================================================= -->
+        <div class="account-menu">
+            <button
+                type="button"
+                class="account-menu-toggle"
+                id="accountMenuToggle"
+                aria-label="Open account menu"
+                aria-expanded="false"
+                data-menu-i18n-attr="aria-label"
+                data-menu-i18n-key="openMenu"
+            >
+                <span class="menu-user-icon">👤</span>
+                <span class="hamburger-lines" aria-hidden="true">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </span>
+            </button>
+
+            <div class="account-dropdown" id="accountDropdown" aria-hidden="true">
+                {% if logged_in_user %}
+                    <div class="account-summary">
+                        <div class="account-avatar">
+                            {% if logged_in_user["role"] == "caregiver" %}👨‍⚕️{% else %}👴{% endif %}
+                        </div>
+                        <div class="account-summary-text">
+                            <strong>{{ logged_in_user["name"] }}</strong>
+                            <span data-menu-i18n="{{ logged_in_user["role"] }}">
+                                {% if logged_in_user["role"] == "caregiver" %}Caregiver{% else %}Patient{% endif %}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="account-menu-divider"></div>
+
+                    <a href="{{ url_for('home') }}" class="account-menu-item">
+                        <span>⌂</span>
+                        <span data-menu-i18n="home">Home</span>
+                    </a>
+
+                    {% if logged_in_user["role"] == "caregiver" %}
+                    <a href="{{ url_for('caregiver_dashboard', caregiver_id=logged_in_user['caregiver_id']) }}" class="account-menu-item">
+                        <span>▦</span>
+                        <span data-menu-i18n="dashboard">Dashboard</span>
+                    </a>
+                    <a href="{{ url_for('caregiver_patients', caregiver_id=logged_in_user['caregiver_id']) }}" class="account-menu-item">
+                        <span>👥</span>
+                        <span data-menu-i18n="myPatients">My Patients</span>
+                    </a>
+                    {% else %}
+                    <a href="{{ url_for('patient_dashboard', patient_id=logged_in_user['patient_id']) }}" class="account-menu-item">
+                        <span>▦</span>
+                        <span data-menu-i18n="dashboard">My Dashboard</span>
+                    </a>
+
+                    <a href="{{ url_for('patient_edit_profile', patient_id=logged_in_user['patient_id']) }}" class="account-menu-item">
+                        <span>✏️</span>
+                        <span>Edit Profile</span>
+                    </a>
+                    {% endif %}
+
+                    <button type="button" class="account-menu-item menu-disabled" disabled>
+                        <span>⚙</span>
+                        <span data-menu-i18n="settings">Settings</span>
+                        <small data-menu-i18n="comingSoon">Coming soon</small>
+                    </button>
+
+                    <button type="button" class="account-menu-item menu-disabled" disabled>
+                        <span>?</span>
+                        <span data-menu-i18n="help">Help &amp; Support</span>
+                        <small data-menu-i18n="comingSoon">Coming soon</small>
+                    </button>
+
+                    <div class="account-menu-divider"></div>
+
+                    <a href="{{ url_for('logout') }}" class="account-menu-item account-logout">
+                        <span>⇥</span>
+                        <span data-menu-i18n="logout">Logout</span>
+                    </a>
+                {% else %}
+                    <div class="account-summary guest-summary">
+                        <div class="account-avatar">🧠</div>
+                        <div class="account-summary-text">
+                            <strong data-menu-i18n="guest">Welcome to NER-Care</strong>
+                            <span data-menu-i18n="guestSubtitle">Account access</span>
+                        </div>
+                    </div>
+
+                    <div class="account-menu-divider"></div>
+
+                    <a href="{{ url_for('home') }}" class="account-menu-item">
+                        <span>⌂</span>
+                        <span data-menu-i18n="home">Home</span>
+                    </a>
+
+                    <a href="{{ url_for('login') }}" class="account-menu-item">
+                        <span>→</span>
+                        <span data-menu-i18n="login">Log In</span>
+                    </a>
+
+                    <a href="{{ url_for('register') }}" class="account-menu-item">
+                        <span>＋</span>
+                        <span data-menu-i18n="createAccount">Create Account</span>
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+
+</header>
+
+<main class="content">
+    {% block content %}{% endblock %}
+</main>
+
+<footer class="footer">
+    <p><span data-i18n="footer">NER-Care · AI Cognitive Health Platform · SIH 2026</span></p>
+</footer>
+
+<script>
+/* =========================================================
+   NER-Care — ACCOUNT / HAMBURGER MENU
+   ========================================================= */
+
+const NERCARE_MENU_TRANSLATIONS = {
+    en: {
+        openMenu: "Open account menu",
+        home: "Home",
+        dashboard: "Dashboard",
+        myPatients: "My Patients",
+        settings: "Settings",
+        help: "Help & Support",
+        logout: "Logout",
+        comingSoon: "Coming soon",
+        guest: "Welcome to NER-Care",
+        guestSubtitle: "Account access",
+        login: "Log In",
+        createAccount: "Create Account",
+        caregiver: "Caregiver",
+        patient: "Patient"
+    },
+    hi: {
+        openMenu: "खाता मेनू खोलें",
+        home: "होम",
+        dashboard: "डैशबोर्ड",
+        myPatients: "मेरे मरीज",
+        settings: "सेटिंग्स",
+        help: "सहायता और सपोर्ट",
+        logout: "लॉग आउट",
+        comingSoon: "जल्द उपलब्ध होगा",
+        guest: "NER-Care में आपका स्वागत है",
+        guestSubtitle: "खाता एक्सेस",
+        login: "लॉग इन",
+        createAccount: "खाता बनाएँ",
+        caregiver: "देखभालकर्ता",
+        patient: "मरीज"
+    },
+    as: {
+        openMenu: "একাউণ্ট মেনু খোলক",
+        home: "হোম",
+        dashboard: "ডেশ্বব'ৰ্ড",
+        myPatients: "মোৰ ৰোগী",
+        settings: "ছেটিংছ",
+        help: "সহায় আৰু সমৰ্থন",
+        logout: "লগ আউট",
+        comingSoon: "শীঘ্ৰে উপলব্ধ হ'ব",
+        guest: "NER-Care লৈ স্বাগতম",
+        guestSubtitle: "একাউণ্ট প্ৰৱেশ",
+        login: "লগ ইন",
+        createAccount: "একাউণ্ট সৃষ্টি কৰক",
+        caregiver: "যত্ন লোৱা ব্যক্তি",
+        patient: "ৰোগী"
+    },
+    bn: {
+        openMenu: "অ্যাকাউন্ট মেনু খুলুন",
+        home: "হোম",
+        dashboard: "ড্যাশবোর্ড",
+        myPatients: "আমার রোগীরা",
+        settings: "সেটিংস",
+        help: "সহায়তা ও সাপোর্ট",
+        logout: "লগ আউট",
+        comingSoon: "শীঘ্রই আসছে",
+        guest: "NER-Care-এ স্বাগতম",
+        guestSubtitle: "অ্যাকাউন্ট অ্যাক্সেস",
+        login: "লগ ইন",
+        createAccount: "অ্যাকাউন্ট তৈরি করুন",
+        caregiver: "যত্নকারী",
+        patient: "রোগী"
+    },
+    mni: {
+        openMenu: "Account menu hanghanba",
+        home: "Home",
+        dashboard: "Dashboard",
+        myPatients: "Eigi patient-sing",
+        settings: "Settings",
+        help: "Help amasung Support",
+        logout: "Log out",
+        comingSoon: "Mapung phana lakpa",
+        guest: "NER-Care-da taramnasu",
+        guestSubtitle: "Account access",
+        login: "Log In",
+        createAccount: "Account semba",
+        caregiver: "Caregiver",
+        patient: "Patient"
+    },
+    kha: {
+        openMenu: "Plie ïa ka account menu",
+        home: "Home",
+        dashboard: "Dashboard",
+        myPatients: "Ki nongpang jong nga",
+        settings: "Settings",
+        help: "Ka jingïarap bad Support",
+        logout: "Logout",
+        comingSoon: "Un wan shen",
+        guest: "Pdiang sngewbha sha NER-Care",
+        guestSubtitle: "Account access",
+        login: "Log In",
+        createAccount: "Pynlong Account",
+        caregiver: "Nongsumar",
+        patient: "Nongpang"
+    },
+    lus: {
+        openMenu: "Account menu hawn rawh",
+        home: "Home",
+        dashboard: "Dashboard",
+        myPatients: "Ka patient-te",
+        settings: "Settings",
+        help: "Tanpuina leh Support",
+        logout: "Logout",
+        comingSoon: "Soon-ah available",
+        guest: "NER-Care-ah kan lo lawm e",
+        guestSubtitle: "Account access",
+        login: "Log In",
+        createAccount: "Account siam rawh",
+        caregiver: "Caregiver",
+        patient: "Patient"
+    }
+};
+
+function applyAccountMenuLanguage(language) {
+    const dict = NERCARE_MENU_TRANSLATIONS[language] || NERCARE_MENU_TRANSLATIONS.en;
+
+    document.querySelectorAll("[data-menu-i18n]").forEach(function (element) {
+        const key = element.getAttribute("data-menu-i18n");
+        if (dict[key]) {
+            element.textContent = dict[key];
+        }
+    });
+
+    document.querySelectorAll("[data-menu-i18n-attr]").forEach(function (element) {
+        const attr = element.getAttribute("data-menu-i18n-attr");
+        const key = element.getAttribute("data-menu-i18n-key");
+        if (attr && key && dict[key]) {
+            element.setAttribute(attr, dict[key]);
+        }
+    });
+}
+
+(function () {
+    const toggle = document.getElementById("accountMenuToggle");
+    const dropdown = document.getElementById("accountDropdown");
+    const menu = document.querySelector(".account-menu");
+
+    if (!toggle || !dropdown || !menu) return;
+
+    function closeMenu() {
+        menu.classList.remove("open");
+        toggle.setAttribute("aria-expanded", "false");
+        dropdown.setAttribute("aria-hidden", "true");
+    }
+
+    toggle.addEventListener("click", function (event) {
+        event.stopPropagation();
+        const isOpen = menu.classList.toggle("open");
+        toggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
+        dropdown.setAttribute("aria-hidden", isOpen ? "false" : "true");
+    });
+
+    document.addEventListener("click", function (event) {
+        if (!menu.contains(event.target)) {
+            closeMenu();
+        }
+    });
+
+    document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape") {
+            closeMenu();
+        }
+    });
+
+    dropdown.querySelectorAll("a").forEach(function (link) {
+        link.addEventListener("click", closeMenu);
+    });
+
+    applyAccountMenuLanguage(localStorage.getItem("nercare_language") || "en");
+})();
+</script>
+
+<script>
+/* =========================================================
+   NER-Care — GLOBAL LANGUAGE SYSTEM
+   The selected language is shared by every page.
+   ========================================================= */
+
+const NERCARE_TRANSLATIONS = {
+    en: {
+        goBack:"Go back", navHome:"Home", navCognitive:"Cognitive Care", navCaregiver:"Caregiver",
+        readAloud:"Read Aloud", stop:"Stop", tagline:"AI Cognitive Care",
+        footer:"NER-Care · AI Cognitive Health Platform · SIH 2026",
+
+        patientDashboard:"Patient Dashboard", caregiverDashboard:"Caregiver Dashboard",
+        currentLevel:"Current Level:", todaysGames:"Today's Games", reminders:"Reminders",
+        noPendingReminders:"No pending reminders. 🎉", done:"Done",
+        memoryMatch:"Memory Match", patternRecognition:"Pattern Recognition",
+        dailyRoutine:"Daily Routine Recall", objectRecognition:"Object Recognition",
+        backDashboard:"⬅ Back to Dashboard",
+
+        findPairs:"Find matching pairs.", level:"Level:", watchRepeat:"Watch the sequence, then repeat it.",
+        getReady:"Get ready...", watchCarefully:"Watch carefully...",
+        yourTurn:"Your turn! Repeat the pattern.",
+        excellentMemory:"🎉 Excellent! You remembered the routine correctly.",
+        goodTry:"Good try! The correct answer was",
+        excellentObject:"🎉 Excellent! You recognized the object.",
+        wellDone:"Well done! Completed in",
+        greatJob:"🎉 Great job! Sequence complete.",
+        niceTry:"Nice try! You got",
+        correct:"correct.",
+        whatNext:"What usually comes next?", think:"Think carefully...",
+        lookChoose:"Look carefully and choose the object you see.",
+        whichObject:"Which object is this?",
+
+        cognitiveOverview:"Patient cognitive care overview", cognitiveLevel:"Cognitive Level",
+        gamesPlayed:"Games Played", latestScore:"Latest Score", latestGameTime:"Latest Game Time",
+        addReminder:"⏰ Add Patient Reminder",
+        createReminders:"Create reminders for medicine, hydration, activities and appointments.",
+        medicine:"Medicine", hydration:"Hydration", dailyActivity:"Daily Activity",
+        medicalAppointment:"Medical Appointment", addReminderBtn:"➕ Add Reminder",
+        cognitivePerformance:"📊 Cognitive Performance",
+        trackPerformance:"Track the patient's game performance over time.",
+        noGames:"No games played yet",
+        performanceAfterGame:"Performance data will appear here after the patient completes a game.",
+        gameHistory:"🎮 Game History", game:"Game", score:"Score", time:"Time", when:"When",
+        scoreOverTime:"Score over time",
+
+        aiCenter:"AI Cognitive Center", intelligentAnalysis:"INTELLIGENT ANALYSIS",
+        activeProfile:"Active cognitive profile", sessions:"Sessions",
+        trackedSessions:"Tracked game sessions", adaptiveLevel:"Adaptive game level",
+        avgAccuracy:"Avg Accuracy", structuredSessions:"From structured sessions",
+        changeSignal:"AI Cognitive Change Signal",
+        signalDescription:"Performance signal based on available longitudinal game data.",
+        performanceChange:"Performance Change", increasedBy:"Increased by", decreasedBy:"Decreased by",
+        noMeaningfulChange:"No meaningful change", responseTime:"Response Time",
+        slower:"slower", faster:"faster", recentPerformance:"Recent Performance",
+        dataConfidence:"Data Confidence", dataSufficiency:"Data sufficiency, not diagnostic confidence.",
+        basedOnSessions:"Based on tracked session(s).",
+        domainProfile:"🧩 Cognitive Domain Profile",
+        domainDescription:"Game performance mapped to standardized cognitive domains.",
+        needsSessions:"Needs more sessions", insufficientData:"Insufficient data",
+        longitudinal:"📈 Longitudinal Performance",
+        longitudinalDescription:"Recent sessions shown as a time-based performance trajectory.",
+        recentTimeline:"Recent Session Timeline", lastSessions:"Last sessions", baseline:"Baseline",
+        recent:"Recent", completeMore:"Complete more cognitive game sessions to build a longitudinal performance timeline.",
+        insights:"🔍 AI-Detected Insights",
+        insightDescription:"Explainable observations generated from recorded performance data.",
+        evidence:"Evidence:", suggestedAction:"Suggested action:",
+        noInsight:"💡 No major automated insight yet",
+        continueSessions:"Continue structured sessions so the system can compare performance over time.",
+        recommendations:"🧭 Caregiver Recommendations",
+        recommendationDescription:"Data-driven supportive actions based on the current performance profile.",
+        nonDiagnostic:"NON-DIAGNOSTIC", buildBaseline:"Build baseline",
+        collectSessions:"Collect more structured sessions",
+        continueActivities:"Continue regular cognitive activities before interpreting longer-term changes.",
+        why:"Why:", sessionsAvailable:"total sessions and", structuredAvailable:"structured sessions are currently available.",
+        useDifferentGames:"Use several different games across multiple days to build a more reliable baseline.",
+        review:"Review", reviewChange:"Review the recent performance change",
+        monitorUpcoming:"Continue monitoring upcoming sessions and discuss persistent changes with the appropriate caregiver or healthcare professional.",
+        positiveSignal:"Positive signal", maintainPractice:"Maintain the current practice pattern",
+        regularPractice:"Continue regular cognitive practice and check whether the improvement remains consistent.",
+        routine:"Routine", regularEngagement:"Continue regular cognitive engagement",
+        variedActivities:"Keep sessions regular and use varied, familiar activities.",
+        monitorSpeed:"Monitor speed", attentionSpeed:"Give response speed extra attention",
+        calmSessions:"Use calm, short sessions and monitor whether slower responses persist.",
+        targetedPractice:"Targeted practice", focusDomains:"Focus on changing cognitive domains",
+        includeActivities:"Include more short activities engaging these domains and observe the next few sessions.",
+        recommendationsNote:"Recommendations are generated from available game-performance data and are intended to support caregiver observation, not medical diagnosis.",
+        observations:"👁️ Caregiver Observations",
+        observationDescription:"Manual observations add real-world context to game performance.",
+        observationArea:"Observation area", status:"Status", noted:"Noted", improved:"Improved",
+        needsAttention:"Needs attention", resolved:"Resolved", whatObserved:"What did you observe?",
+        saveObservation:"Save observation", noObservations:"No caregiver observations recorded yet. Use the form to add real-world context.",
+        observationNote:"Caregiver observations are manually recorded and are not automatically treated as medical diagnoses or AI conclusions.",
+        contextFusion:"🧠 AI Context Fusion",
+        contextDescription:"Performance, response speed, cognitive domains and caregiver context reviewed together.",
+        explainable:"EXPLAINABLE", performanceSignal:"Performance Signal", caregiverContext:"Caregiver Context",
+        dataEvidence:"Data Evidence", caregiverSignals:"Caregiver Signals", aiInterpretation:"AI interpretation:",
+        nextStep:"Suggested next step:", practicePlan:"🎯 Personalized AI Practice Plan",
+        practiceDescription:"Targeted practice suggestions based on the patient's available cognitive-game data.",
+        priorityDomain:"Priority domain", recommendedGames:"Recommended games", sessionLength:"Session length:",
+        whyLabel:"Why:", plan:"Plan:",
+        practiceNote:"AI recommendations support practice planning and caregiver observation; they do not diagnose a medical condition.",
+        gamePerformance:"🎮 Game-wise Performance",
+        gamePerformanceDescription:"How each cognitive game is contributing data to the profile.",
+        avgScore:"Avg Score", avgTime:"Avg Time", noGameData:"🎮 No game data available",
+        completeGame:"Complete a cognitive game session to begin analysis.",
+        responsibleAI:"⚕️ Responsible AI notice:",
+        responsibleText:"AI-generated performance insights are intended to support caregiver observation and longitudinal monitoring. They are not a medical diagnosis and should not be used alone to diagnose dementia or any other neurological condition. Clinical interpretation should consider functional changes, caregiver observations, language, context and professional assessment.",
+        reportTitle:"NER-Care — Caregiver Cognitive Report",
+        reportSubtitle:"Longitudinal cognitive-game performance summary for caregiver review.",
+        aiContextSummary:"AI Context Summary", cognitiveProfile:"Cognitive Domain Profile",
+        personalizedPlan:"Personalized Practice Plan", recentObservations:"Recent Caregiver Observations"
+    },
+    hi: {
+        goBack:"वापस जाएँ", navHome:"होम", navCognitive:"संज्ञानात्मक देखभाल", navCaregiver:"देखभालकर्ता",
+        readAloud:"पढ़कर सुनाएँ", stop:"रोकें", tagline:"AI संज्ञानात्मक देखभाल",
+        footer:"NER-Care · AI संज्ञानात्मक स्वास्थ्य प्लेटफ़ॉर्म · SIH 2026",
+        patientDashboard:"मरीज डैशबोर्ड", caregiverDashboard:"देखभालकर्ता डैशबोर्ड",
+        currentLevel:"वर्तमान स्तर:", todaysGames:"आज के खेल", reminders:"रिमाइंडर",
+        noPendingReminders:"कोई लंबित रिमाइंडर नहीं है। 🎉", done:"पूरा हुआ",
+        memoryMatch:"मेमोरी मैच", patternRecognition:"पैटर्न पहचान",
+        dailyRoutine:"दैनिक दिनचर्या स्मरण", objectRecognition:"वस्तु पहचान", backDashboard:"⬅ डैशबोर्ड पर वापस जाएँ",
+        findPairs:"समान जोड़ियों को खोजें।", level:"स्तर:", watchRepeat:"क्रम को ध्यान से देखें, फिर दोहराएँ।",
+        getReady:"तैयार हो जाइए...", watchCarefully:"ध्यान से देखें...", yourTurn:"अब आपकी बारी! पैटर्न दोहराएँ।",
+        excellentMemory:"🎉 बहुत बढ़िया! आपने दिनचर्या सही याद रखी।", goodTry:"अच्छी कोशिश! सही उत्तर था",
+        excellentObject:"🎉 बहुत बढ़िया! आपने वस्तु पहचान ली।", wellDone:"बहुत बढ़िया! पूरा हुआ",
+        greatJob:"🎉 शानदार! क्रम पूरा हुआ।", niceTry:"अच्छी कोशिश! आपने", correct:"सही किए।",
+        whatNext:"इसके बाद सामान्यतः क्या आता है?", think:"ध्यान से सोचें...",
+        lookChoose:"ध्यान से देखें और दिखाई देने वाली वस्तु चुनें।", whichObject:"यह कौन-सी वस्तु है?",
+        cognitiveOverview:"मरीज की संज्ञानात्मक देखभाल का अवलोकन", cognitiveLevel:"संज्ञानात्मक स्तर",
+        gamesPlayed:"खेले गए खेल", latestScore:"नवीनतम स्कोर", latestGameTime:"नवीनतम खेल समय",
+        addReminder:"⏰ मरीज के लिए रिमाइंडर जोड़ें", createReminders:"दवा, पानी, गतिविधियों और अपॉइंटमेंट के लिए रिमाइंडर बनाएँ।",
+        medicine:"दवा", hydration:"पानी", dailyActivity:"दैनिक गतिविधि", medicalAppointment:"चिकित्सीय अपॉइंटमेंट", addReminderBtn:"➕ रिमाइंडर जोड़ें",
+        cognitivePerformance:"📊 संज्ञानात्मक प्रदर्शन", trackPerformance:"समय के साथ मरीज के खेल प्रदर्शन को देखें।",
+        noGames:"अभी कोई खेल नहीं खेला गया", performanceAfterGame:"मरीज के खेल पूरा करने के बाद प्रदर्शन डेटा यहाँ दिखाई देगा।",
+        gameHistory:"🎮 खेल इतिहास", game:"खेल", score:"स्कोर", time:"समय", when:"कब", scoreOverTime:"समय के साथ स्कोर"
+    },
+    as: {
+        goBack:"পিছলৈ যাওক", navHome:"হোম", navCognitive:"জ্ঞানীয় যত্ন", navCaregiver:"যত্ন লোৱা ব্যক্তি",
+        readAloud:"পঢ়ি শুনাওক", stop:"ৰখাওক", tagline:"AI জ্ঞানীয় যত্ন",
+        footer:"NER-Care · AI জ্ঞানীয় স্বাস্থ্য প্লেটফৰ্ম · SIH 2026",
+        patientDashboard:"ৰোগীৰ ডেশ্বব’ৰ্ড", caregiverDashboard:"যত্ন লোৱা ব্যক্তিৰ ডেশ্বব’ৰ্ড",
+        currentLevel:"বৰ্তমান স্তৰ:", todaysGames:"আজিৰ খেল", reminders:"ৰিমাইণ্ডাৰ",
+        noPendingReminders:"কোনো বাকী ৰিমাইণ্ডাৰ নাই। 🎉", done:"সম্পূৰ্ণ",
+        memoryMatch:"মেমৰি মেচ", patternRecognition:"পেটাৰ্ণ চিনাক্তকৰণ", dailyRoutine:"দৈনন্দিন কাৰ্যসূচী স্মৰণ", objectRecognition:"বস্তু চিনাক্তকৰণ",
+        backDashboard:"⬅ ডেশ্বব’ৰ্ডলৈ উভতি যাওক", findPairs:"মিল থকা যোৰ বিচাৰক।", level:"স্তৰ:",
+        watchRepeat:"ক্ৰমটো চাওক, তাৰ পিছত পুনৰাবৃত্তি কৰক।", getReady:"প্ৰস্তুত হওক...", watchCarefully:"সাৱধানে চাওক...",
+        yourTurn:"এতিয়া আপোনাৰ পাল! পেটাৰ্ণটো পুনৰাবৃত্তি কৰক।", excellentMemory:"🎉 বৰ ভাল! আপুনি কাৰ্যসূচীটো সঠিকভাৱে মনত ৰাখিলে।",
+        goodTry:"ভাল চেষ্টা! সঠিক উত্তৰ আছিল", excellentObject:"🎉 বৰ ভাল! আপুনি বস্তুটো চিনাক্ত কৰিলে।", wellDone:"বৰ ভাল! সম্পূৰ্ণ হ’ল",
+        greatJob:"🎉 চমৎকাৰ! ক্ৰমটো সম্পূৰ্ণ হ’ল।", niceTry:"ভাল চেষ্টা! আপুনি", correct:"সঠিক কৰিলে।",
+        whatNext:"ইয়াৰ পিছত সাধাৰণতে কি আহে?", think:"ভালদৰে চিন্তা কৰক...", lookChoose:"ভালদৰে চাওক আৰু দেখা বস্তুটো বাছনি কৰক।", whichObject:"এইটো কি বস্তু?",
+        cognitiveOverview:"ৰোগীৰ জ্ঞানীয় যত্নৰ অৱলোকন", cognitiveLevel:"জ্ঞানীয় স্তৰ", gamesPlayed:"খেলা খেলৰ সংখ্যা",
+        latestScore:"শেহতীয়া স্ক’ৰ", latestGameTime:"শেহতীয়া খেলৰ সময়", addReminder:"⏰ ৰোগীৰ ৰিমাইণ্ডাৰ যোগ কৰক",
+        createReminders:"ঔষধ, পানী, কাৰ্যকলাপ আৰু এপইণ্টমেণ্টৰ বাবে ৰিমাইণ্ডাৰ সৃষ্টি কৰক।", medicine:"ঔষধ", hydration:"পানী",
+        dailyActivity:"দৈনন্দিন কাৰ্যকলাপ", medicalAppointment:"চিকিৎসা এপইণ্টমেণ্ট", addReminderBtn:"➕ ৰিমাইণ্ডাৰ যোগ কৰক",
+        cognitivePerformance:"📊 জ্ঞানীয় প্ৰদৰ্শন", trackPerformance:"সময়ৰ সৈতে ৰোগীৰ খেলৰ প্ৰদৰ্শন অনুসৰণ কৰক।",
+        noGames:"এতিয়ালৈ কোনো খেল খেলা হোৱা নাই", performanceAfterGame:"ৰোগীয়ে খেল সম্পূৰ্ণ কৰাৰ পিছত প্ৰদৰ্শনৰ তথ্য ইয়াত দেখা যাব।",
+        gameHistory:"🎮 খেলৰ ইতিহাস", game:"খেল", score:"স্ক’ৰ", time:"সময়", when:"কেতিয়া", scoreOverTime:"সময়ৰ সৈতে স্ক’ৰ"
+    },
+    bn: {
+        goBack:"পিছনে যান", navHome:"হোম", navCognitive:"জ্ঞানীয় যত্ন", navCaregiver:"যত্নকারী",
+        readAloud:"পড়ে শোনান", stop:"থামুন", tagline:"AI জ্ঞানীয় যত্ন",
+        footer:"NER-Care · AI জ্ঞানীয় স্বাস্থ্য প্ল্যাটফর্ম · SIH 2026",
+        patientDashboard:"রোগী ড্যাশবোর্ড", caregiverDashboard:"যত্নকারী ড্যাশবোর্ড",
+        currentLevel:"বর্তমান স্তর:", todaysGames:"আজকের খেলা", reminders:"রিমাইন্ডার", noPendingReminders:"কোনো বকেয়া রিমাইন্ডার নেই। 🎉", done:"সম্পন্ন",
+        memoryMatch:"মেমরি ম্যাচ", patternRecognition:"প্যাটার্ন শনাক্তকরণ", dailyRoutine:"দৈনন্দিন রুটিন স্মরণ", objectRecognition:"বস্তু শনাক্তকরণ", backDashboard:"⬅ ড্যাশবোর্ডে ফিরে যান",
+        findPairs:"মিল থাকা জোড়া খুঁজুন।", level:"স্তর:", watchRepeat:"ক্রমটি দেখুন, তারপর পুনরাবৃত্তি করুন।", getReady:"প্রস্তুত হন...", watchCarefully:"মন দিয়ে দেখুন...",
+        yourTurn:"এখন আপনার পালা! প্যাটার্নটি পুনরাবৃত্তি করুন।", excellentMemory:"🎉 দারুণ! আপনি রুটিনটি সঠিকভাবে মনে রেখেছেন।", goodTry:"ভালো চেষ্টা! সঠিক উত্তর ছিল",
+        excellentObject:"🎉 দারুণ! আপনি বস্তুটি চিনেছেন।", wellDone:"দারুণ! সম্পন্ন হয়েছে", greatJob:"🎉 চমৎকার! ক্রম সম্পূর্ণ হয়েছে।", niceTry:"ভালো চেষ্টা! আপনি", correct:"সঠিক করেছেন।",
+        whatNext:"এর পরে সাধারণত কী আসে?", think:"মন দিয়ে ভাবুন...", lookChoose:"মন দিয়ে দেখুন এবং যে বস্তুটি দেখছেন তা বেছে নিন।", whichObject:"এটি কোন বস্তু?",
+        cognitiveOverview:"রোগীর জ্ঞানীয় যত্নের সংক্ষিপ্ত বিবরণ", cognitiveLevel:"জ্ঞানীয় স্তর", gamesPlayed:"খেলা হয়েছে",
+        latestScore:"সর্বশেষ স্কোর", latestGameTime:"সর্বশেষ খেলার সময়", addReminder:"⏰ রোগীর রিমাইন্ডার যোগ করুন", createReminders:"ওষুধ, পানি, কার্যক্রম এবং অ্যাপয়েন্টমেন্টের জন্য রিমাইন্ডার তৈরি করুন।",
+        medicine:"ওষুধ", hydration:"পানি", dailyActivity:"দৈনন্দিন কার্যক্রম", medicalAppointment:"চিকিৎসা অ্যাপয়েন্টমেন্ট", addReminderBtn:"➕ রিমাইন্ডার যোগ করুন",
+        cognitivePerformance:"📊 জ্ঞানীয় কর্মক্ষমতা", trackPerformance:"সময়ের সঙ্গে রোগীর খেলার কর্মক্ষমতা অনুসরণ করুন।", noGames:"এখনও কোনো খেলা খেলা হয়নি",
+        performanceAfterGame:"রোগী একটি খেলা শেষ করার পরে কর্মক্ষমতার তথ্য এখানে দেখা যাবে।", gameHistory:"🎮 খেলার ইতিহাস", game:"খেলা", score:"স্কোর", time:"সময়", when:"কখন", scoreOverTime:"সময়ের সঙ্গে স্কোর"
+    },
+    mni: {
+        goBack:"হন্না লৈয়ু", navHome:"হোম", navCognitive:"জ্ঞানীয় যত্ন", navCaregiver:"যত্নকারী", readAloud:"পড়ে শোনাও", stop:"লৌথোকপা",
+        tagline:"AI জ্ঞানীয় যত্ন", footer:"NER-Care · AI জ্ঞানীয় স্বাস্থ্য প্ল্যাটফর্ম · SIH 2026",
+        patientDashboard:"রোগীগী ড্যাশবোর্ড", caregiverDashboard:"যত্নকারীগী ড্যাশবোর্ড", currentLevel:"বর্তমান স্তর:", todaysGames:"নুমিৎ অসিগী খেল",
+        reminders:"রিমাইন্ডার", noPendingReminders:"কোনো বাকি রিমাইন্ডার নাই। 🎉", done:"লোইশিনরে", memoryMatch:"মেমরি ম্যাচ",
+        patternRecognition:"প্যাটার্ন চিনাক্তকরণ", dailyRoutine:"নুমিত-নুমিতকী কার্যসূচী", objectRecognition:"বস্তু চিনাক্তকরণ", backDashboard:"⬅ ড্যাশবোর্ডদা হন্না চঙশিনু",
+        findPairs:"মিল তাদবা জোড়া খুঁজৌ।", level:"স্তর:", watchRepeat:"ক্রম অসি ইয়েংউ, অমসুং মখোংদা নুংশিল্লু।", getReady:"শেমশে হও...", watchCarefully:"য়েংজিংনা ইয়েংউ...",
+        yourTurn:"নহাক্কী পালা নি! প্যাটার্ন অসি নুংশিল্লু।", excellentMemory:"🎉 ফজনা তৌরে! নহাক্না রুটিন অসি ফজনা নুংঙাই।",
+        goodTry:"ফজনা চেষ্টা তৌরে! সঠিক উত্তর নি", excellentObject:"🎉 ফজনা! বস্তু অসি চিনাক্ত তৌরে।", wellDone:"ফজনা! লোইশিনরে", greatJob:"🎉 চমৎকার! ক্রম লোইশিনরে।",
+        niceTry:"ফজনা চেষ্টা! নহাক্না", correct:"সঠিক তৌরে।", whatNext:"মসি মতমদা করিগুম্বা থোকই?", think:"নুংশিজনা চিন্তা তৌউ...",
+        lookChoose:"য়েংজিংনা ইয়েংউ অমসুং নহাক্না উবা বস্তু অসি খনৌ।", whichObject:"মসি করিগী বস্তু নি?",
+        cognitiveOverview:"রোগীগী জ্ঞানীয় যত্নগী অৱলোকন", cognitiveLevel:"জ্ঞানীয় স্তর", gamesPlayed:"খেল শিংখিবা", latestScore:"শেষ স্কোর", latestGameTime:"শেষ খেলগী মতম",
+        addReminder:"⏰ রোগীগী রিমাইন্ডার যোগ তৌ", createReminders:"ঔষধ, পানি, কার্যকলাপ অমসুং অ্যাপয়েন্টমেন্টগী রিমাইন্ডার শেম্মু।", medicine:"ঔষধ", hydration:"পানি",
+        dailyActivity:"নুমিতকী কার্যকলাপ", medicalAppointment:"চিকিৎসা অ্যাপয়েন্টমেন্ট", addReminderBtn:"➕ রিমাইন্ডার যোগ তৌ", cognitivePerformance:"📊 জ্ঞানীয় কর্মক্ষমতা",
+        trackPerformance:"মতমগী মতাংদা রোগীগী খেলগী কর্মক্ষমতা ইয়েংশিনউ।", noGames:"হৌজিকফাও খেল অমত্তা খেলরে", performanceAfterGame:"রোগীনা খেল অমা লোইশিনবদা কর্মক্ষমতাগী তথ্য অসি ইয়েংবা ফংগনি।",
+        gameHistory:"🎮 খেলগী ইতিহাস", game:"খেল", score:"স্কোর", time:"মতম", when:"কদায়দা", scoreOverTime:"মতমগী মতাংদা স্কোর"
+    },
+    kha: {
+        goBack:"Leitphai", navHome:"Home", navCognitive:"Ka jingsumar jingmut", navCaregiver:"Nongsumar", readAloud:"Pule paidbah", stop:"Sangeh",
+        tagline:"AI Cognitive Care", footer:"NER-Care · AI Cognitive Health Platform · SIH 2026",
+        patientDashboard:"Patient Dashboard", caregiverDashboard:"Dashboard u Nongsumar", currentLevel:"Ka kyrdan mynta:", todaysGames:"Ki jingïalehkai mynta ka sngi",
+        reminders:"Ki jingpynkynmaw", noPendingReminders:"Ym don jingpynkynmaw ba dang sah. 🎉", done:"La dep", memoryMatch:"Memory Match",
+        patternRecognition:"Pattern Recognition", dailyRoutine:"Kynmaw ïa ka rukom sngi", objectRecognition:"Pynithuh ïa ka jingthaw", backDashboard:"⬅ Leitphai sha Dashboard",
+        findPairs:"Pynïasoh ïa ki ar tylli kiba ïahap.", level:"Kyrdan:", watchRepeat:"Peit ïa ka jingïaid, nangta bud biang.", getReady:"Pynkhreh...", watchCarefully:"Peit bha...",
+        yourTurn:"Ka dei ka por jong phi! Bud biang ïa ka pattern.", excellentMemory:"🎉 Bha shibun! Phi kynmaw bha ïa ka rukom sngi.", goodTry:"Ka jingïaleh kaba bha! Ka jubab kaba dei ka long",
+        excellentObject:"🎉 Bha shibun! Phi la ithuh ïa ka jingthaw.", wellDone:"Bha! La dep", greatJob:"🎉 Khlaiñ! Ka sequence la dep.", niceTry:"Ka jingïaleh kaba bha! Phi la", correct:"dei.", whatNext:"Kaei kaba ju wan hadien?", think:"Pyrkhat bha...",
+        lookChoose:"Peit bha bad jied ïa ka jingthaw kaba phi iohi.", whichObject:"Kaei kane ka jingthaw?",
+        cognitiveOverview:"Ka jingpeit paidbah ïa ka jingsumar jingmut jong u patient", cognitiveLevel:"Ka kyrdan jingmut", gamesPlayed:"Ki jingïalehkai ba la leh",
+        latestScore:"Ka score ba khatduh", latestGameTime:"Ka por jingïalehkai ba khatduh", addReminder:"⏰ Pynrung jingpynkynmaw ïa u patient",
+        createReminders:"Pynlong jingpynkynmaw na ka bynta dawai, um, ki kam bad appointment.", medicine:"Dawai", hydration:"Um", dailyActivity:"Kam man ka sngi",
+        medicalAppointment:"Appointment da u doctor", addReminderBtn:"➕ Pynrung jingpynkynmaw", cognitivePerformance:"📊 Ka jingtrei jingmut",
+        trackPerformance:"Peit ïa ka jingtrei jong u patient ha ki jingïalehkai ha ka por.", noGames:"Ym pat don jingïalehkai",
+        performanceAfterGame:"Ka jingtip shaphang ka performance kan paw hangne hadien ba u patient u la pyndep ïa ka jingïalehkai.", gameHistory:"🎮 Ka histori jingïalehkai",
+        game:"Jinglehkai", score:"Score", time:"Por", when:"Lano", scoreOverTime:"Score ha ka por"
+    },
+    lus: {
+        goBack:"Kir leh", navHome:"Home", navCognitive:"Cognitive Care", navCaregiver:"Enkawltu", readAloud:"Chhiar chhuak", stop:"Tawp",
+        tagline:"AI Cognitive Care", footer:"NER-Care · AI Cognitive Health Platform · SIH 2026",
+        patientDashboard:"Patient Dashboard", caregiverDashboard:"Enkawltu Dashboard", currentLevel:"Level tun:", todaysGames:"Nimin ni game",
+        reminders:"Reminder", noPendingReminders:"Reminder dang awm lo. 🎉", done:"Tih fel", memoryMatch:"Memory Match",
+        patternRecognition:"Pattern Recognition", dailyRoutine:"Nitin nun hriat reng", objectRecognition:"Thil hriat chhuah", backDashboard:"⬅ Dashboard-ah kir leh",
+        findPairs:"Inang thil pahnihte zawn rawh.", level:"Level:", watchRepeat:"Sequence en la, repeat rawh.", getReady:"Inbuatsaih rawh...", watchCarefully:"En fiah rawh...",
+        yourTurn:"I turn a ni! Pattern repeat rawh.", excellentMemory:"🎉 Tha tak! Nitin routine chu i hre reng.", goodTry:"I bei tha! Chhanna dik chu",
+        excellentObject:"🎉 Tha tak! Thil chu i hre chhuak.", wellDone:"Tha! I zo", greatJob:"🎉 MaWi! Sequence a zo.", niceTry:"I bei tha! I",
+        correct:"dik.", whatNext:"Hei hnuah eng nge lo thleng thin?", think:"Ngaihtuah fiah rawh...", lookChoose:"En fiah la, i hmuh thil chu thlang rawh.", whichObject:"He thil hi eng nge?",
+        cognitiveOverview:"Patient cognitive care enpuina", cognitiveLevel:"Cognitive Level", gamesPlayed:"Game te i chhuah tawh",
+        latestScore:"Score thar ber", latestGameTime:"Game hun thar ber", addReminder:"⏰ Patient reminder dah rawh",
+        createReminders:"Dawt, tui, activity leh appointment atan reminder siam rawh.", medicine:"Dawt", hydration:"Tui", dailyActivity:"Nitin activity",
+        medicalAppointment:"Doctor appointment", addReminderBtn:"➕ Reminder dah rawh", cognitivePerformance:"📊 Cognitive performance",
+        trackPerformance:"Hun kal zel ah patient game performance en rawh.", noGames:"Game la chhuah lo", performanceAfterGame:"Patient game a zo hnuah performance data hi hetah a lang ang.",
+        gameHistory:"🎮 Game history", game:"Game", score:"Score", time:"Hun", when:"Engtikah", scoreOverTime:"Hun kal zel score"
+    }
+};
+
+function nercareLanguage() {
+    return localStorage.getItem("nercare_language") || "en";
+}
+
+function nercareTranslateElement(element, language) {
+    const dict = NERCARE_TRANSLATIONS[language] || NERCARE_TRANSLATIONS.en;
+    const key = element.getAttribute("data-i18n");
+    if (key && dict[key]) element.innerHTML = dict[key];
+
+    const attrKey = element.getAttribute("data-i18n-key");
+    const attrName = element.getAttribute("data-i18n-attr");
+    if (attrKey && attrName && dict[attrKey]) element.setAttribute(attrName, dict[attrKey]);
+}
+
+function applyGlobalLanguage(language) {
+    const selected = NERCARE_TRANSLATIONS[language] ? language : "en";
+    document.documentElement.lang = selected;
+    document.querySelectorAll("[data-i18n], [data-i18n-attr]").forEach(el => {
+        nercareTranslateElement(el, selected);
+    });
+
+    /* Translate ordinary static text nodes without changing game data.
+       Pages can opt a container out with data-no-global-translate. */
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+    const nodes = [];
+    while (walker.nextNode()) {
+        const node = walker.currentNode;
+        if (!node.nodeValue.trim()) continue;
+        const parent = node.parentElement;
+        if (!parent || parent.closest("script,style,select,option,[data-no-global-translate]")) continue;
+        if (parent.hasAttribute("data-i18n")) continue;
+        nodes.push(node);
+    }
+
+    const dict = NERCARE_TRANSLATIONS[selected] || NERCARE_TRANSLATIONS.en;
+    const reverse = NERCARE_TRANSLATIONS.en;
+    nodes.forEach(node => {
+        const raw = node.nodeValue;
+        const trimmed = raw.trim();
+        if (!trimmed) return;
+        for (const key in reverse) {
+            if (reverse[key] === trimmed && dict[key]) {
+                node.nodeValue = raw.replace(trimmed, dict[key]);
+                break;
+            }
+        }
+    });
+}
+
+/* Keep the selected language when moving between pages. */
+const languageSelect = document.getElementById("languageSelect");
+if (languageSelect) {
+    const savedLanguage = nercareLanguage();
+    languageSelect.value = savedLanguage;
+    languageSelect.addEventListener("change", function () {
+        localStorage.setItem("nercare_language", this.value);
+        applyGlobalLanguage(this.value);
+        /* Reload makes the language available immediately to every template. */
+        window.location.reload();
+    });
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+    applyGlobalLanguage(nercareLanguage());
+});
+</script>
+
+<script>
+/* Existing patient voice support — kept unchanged. */
+const voiceButton = document.getElementById("voiceButton");
+const stopVoiceButton = document.getElementById("stopVoiceButton");
+
+if (voiceButton) {
+    voiceButton.addEventListener("click", function () {
+        window.speechSynthesis.cancel();
+        const mainContent = document.querySelector("main");
+        if (!mainContent) return;
+
+        const textToRead = mainContent.innerText;
+        const speech = new SpeechSynthesisUtterance(textToRead);
+        const language = localStorage.getItem("nercare_language") || "en";
+
+        const voiceLanguages = {
+            en: "en-IN",
+            hi: "hi-IN",
+            as: "as-IN",
+            bn: "bn-IN",
+            mni: "mni-IN",
+            kha: "kha-IN",
+            lus: "lus-IN"
+        };
+
+        speech.lang = voiceLanguages[language] || "en-IN";
+        speech.rate = 0.8;
+        speech.pitch = 1;
+        window.speechSynthesis.speak(speech);
+    });
+}
+
+if (stopVoiceButton) {
+    stopVoiceButton.addEventListener("click", function () {
+        window.speechSynthesis.cancel();
+    });
+}
+
+function goBack() {
+    window.history.back();
+}
+</script>
+
+</body>
+</html>

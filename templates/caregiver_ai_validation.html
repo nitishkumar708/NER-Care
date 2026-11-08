@@ -1,0 +1,666 @@
+{% extends "base.html" %}
+
+{% block title %}AI Cognitive Validation · NER-Care{% endblock %}
+
+{% block content %}
+
+<style>
+    .ai-validation-wrap {
+        width: min(1100px, 94%);
+        margin: 0 auto;
+        padding: 20px 0 70px;
+    }
+
+    .ai-validation-hero {
+        background: linear-gradient(135deg, #102a43, #176b87);
+        color: white;
+        border-radius: 22px;
+        padding: 34px;
+        margin-bottom: 22px;
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+    }
+
+    .ai-validation-badge {
+        display: inline-block;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        opacity: 0.85;
+        margin-bottom: 10px;
+    }
+
+    .ai-validation-hero h1 {
+        margin: 0 0 10px;
+        font-size: clamp(28px, 4vw, 42px);
+    }
+
+    .ai-validation-hero p {
+        margin: 0;
+        max-width: 800px;
+        line-height: 1.6;
+        opacity: 0.94;
+    }
+
+    .ai-safe {
+        margin-top: 20px;
+        padding: 13px 16px;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.12);
+        font-size: 14px;
+    }
+
+    .ai-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 18px;
+        margin-bottom: 22px;
+    }
+
+    .ai-card {
+        background: white;
+        border: 1px solid #dbe7ee;
+        border-radius: 18px;
+        padding: 24px;
+        box-shadow: 0 7px 22px rgba(15, 45, 65, 0.07);
+    }
+
+    .ai-card h2 {
+        margin: 0 0 8px;
+        color: #12344d;
+        font-size: 21px;
+    }
+
+    .ai-card p {
+        margin: 0;
+        color: #5d6d79;
+        line-height: 1.55;
+        font-size: 14px;
+    }
+
+    .ai-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        margin-top: 18px;
+        padding: 8px 12px;
+        border-radius: 999px;
+        background: #e9f8ef;
+        color: #187044;
+        font-size: 13px;
+        font-weight: 700;
+    }
+
+    .ai-result {
+        margin-top: 14px;
+        padding: 12px;
+        border-radius: 12px;
+        background: #f5f9fb;
+        color: #294758;
+        font-size: 13px;
+        line-height: 1.5;
+    }
+
+    .ai-summary {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 14px;
+        margin-bottom: 22px;
+    }
+
+    .ai-metric {
+        background: white;
+        border: 1px solid #dbe7ee;
+        border-radius: 16px;
+        padding: 20px;
+        box-shadow: 0 7px 22px rgba(15, 45, 65, 0.06);
+    }
+
+    .ai-metric span {
+        display: block;
+        color: #6a7d88;
+        font-size: 12px;
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+
+    .ai-metric strong {
+        display: block;
+        color: #12344d;
+        font-size: 25px;
+    }
+
+    .ai-table-card {
+        background: white;
+        border: 1px solid #dbe7ee;
+        border-radius: 18px;
+        padding: 24px;
+        margin-bottom: 22px;
+        box-shadow: 0 7px 22px rgba(15, 45, 65, 0.07);
+    }
+
+    .ai-table-card h2 {
+        margin: 0 0 16px;
+        color: #12344d;
+    }
+
+    .ai-table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 650px;
+    }
+
+    .ai-table th,
+    .ai-table td {
+        padding: 13px 12px;
+        border-bottom: 1px solid #e7eef2;
+        text-align: left;
+        font-size: 14px;
+    }
+
+    .ai-table th {
+        color: #466170;
+        background: #f5f9fb;
+        font-weight: 700;
+    }
+
+    .ai-table td {
+        color: #263d4c;
+    }
+
+    .ai-empty {
+        padding: 25px;
+        text-align: center;
+        color: #6d7d87;
+        background: #f7fafb;
+        border-radius: 12px;
+    }
+
+    .ai-actions {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .ai-action {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 12px 18px;
+        border-radius: 11px;
+        text-decoration: none;
+        font-weight: 700;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .ai-action:hover {
+        transform: scale(1.04);
+        box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
+    }
+
+    .ai-primary {
+        background: #176b87;
+        color: white;
+    }
+
+    .ai-secondary {
+        background: #eef4f7;
+        color: #17384d;
+    }
+
+    @media (max-width: 760px) {
+        .ai-grid,
+        .ai-summary {
+            grid-template-columns: 1fr;
+        }
+
+        .ai-validation-hero {
+            padding: 25px;
+        }
+
+        .ai-card,
+        .ai-table-card {
+            padding: 18px;
+        }
+    }
+</style>
+
+
+<div class="ai-validation-wrap">
+
+    <section class="ai-validation-hero">
+
+        <span class="ai-validation-badge">
+            CAREGIVER / DOCTOR · AI PIPELINE VALIDATION
+        </span>
+
+        <h1>🧠 AI Cognitive Validation Centre</h1>
+
+        <p>
+            Validate how NER-Care captures cognitive-game data,
+            maps performance to cognitive domains, interprets signals,
+            and prepares explainable AI insights.
+        </p>
+
+        <div class="ai-safe">
+            🔒 <strong>Validation sandbox.</strong>
+            This workspace uses caregiver test sessions only and does not
+            modify real patient records or patient analytics.
+        </div>
+
+    </section>
+
+
+    <!-- LIVE AI SUMMARY -->
+
+    <section class="ai-summary">
+
+        <div class="ai-metric">
+            <span>VALIDATION SESSIONS</span>
+            <strong id="aiSessions">—</strong>
+        </div>
+
+        <div class="ai-metric">
+            <span>AVERAGE ACCURACY</span>
+            <strong id="aiAccuracy">—</strong>
+        </div>
+
+        <div class="ai-metric">
+            <span>AVG RESPONSE</span>
+            <strong id="aiResponse">—</strong>
+        </div>
+
+        <div class="ai-metric">
+            <span>AI CONFIDENCE</span>
+            <strong id="aiConfidence">—</strong>
+        </div>
+
+    </section>
+
+
+    <!-- AI VALIDATION COMPONENTS -->
+
+    <section class="ai-grid">
+
+        <div class="ai-card">
+
+            <h2>📥 Data Capture</h2>
+
+            <p>
+                Confirms that game score, accuracy, response time,
+                errors, hints, completion state and metrics are recorded.
+            </p>
+
+            <span class="ai-status" id="captureStatus">
+                ⏳ ANALYZING
+            </span>
+
+            <div class="ai-result" id="captureResult">
+                Checking validation data...
+            </div>
+
+        </div>
+
+
+        <div class="ai-card">
+
+            <h2>🧩 Cognitive Mapping</h2>
+
+            <p>
+                Checks whether validation games are associated with
+                the intended cognitive domains.
+            </p>
+
+            <span class="ai-status" id="mappingStatus">
+                ⏳ ANALYZING
+            </span>
+
+            <div class="ai-result" id="mappingResult">
+                Checking cognitive-domain mapping...
+            </div>
+
+        </div>
+
+
+        <div class="ai-card">
+
+            <h2>📈 Performance Signal</h2>
+
+            <p>
+                Checks whether recorded performance can be interpreted
+                as improving, stable, monitoring, or review recommended.
+            </p>
+
+            <span class="ai-status" id="signalStatus">
+                ⏳ ANALYZING
+            </span>
+
+            <div class="ai-result" id="signalResult">
+                Checking performance signal...
+            </div>
+
+        </div>
+
+
+        <div class="ai-card">
+
+            <h2>🔎 Explainable Insight</h2>
+
+            <p>
+                Checks whether AI insights can be supported by
+                observable validation data rather than unexplained output.
+            </p>
+
+            <span class="ai-status" id="insightStatus">
+                ⏳ ANALYZING
+            </span>
+
+            <div class="ai-result" id="insightResult">
+                Checking explainable evidence...
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- AI RESULT -->
+
+    <section class="ai-table-card">
+
+        <h2>🤖 AI Validation Result</h2>
+
+        <div class="ai-result" id="aiRecommendation">
+            Running validation analysis...
+        </div>
+        <div class="ai-evidence-box">
+            <h3>🔍 Why did the AI generate this signal?</h3>
+
+            <p id="aiSignalReason">
+                Analysing validation evidence...
+            </p>
+
+            <div id="aiEvidenceList"></div>
+        </div>
+
+    </section>
+
+
+    <!-- VALIDATION DATA -->
+
+    <section class="ai-table-card">
+
+        <h2>🧪 Validation Data Available to AI</h2>
+
+        {% if validation_rows %}
+
+        <table class="ai-table">
+
+            <thead>
+                <tr>
+                    <th>Game</th>
+                    <th>Score</th>
+                    <th>Accuracy</th>
+                    <th>Response Time</th>
+                    <th>Errors</th>
+                    <th>Tested At</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for row in validation_rows %}
+
+                <tr>
+
+                    <td>{{ row["game_name"] }}</td>
+
+                    <td>
+                        {{ "%.0f"|format(row["score"] or 0) }}
+                        /
+                        {{ "%.0f"|format(row["max_score"] or 0) }}
+                    </td>
+
+                    <td>
+                        {{ "%.1f"|format(row["accuracy"] or 0) }}%
+                    </td>
+
+                    <td>
+                        {% if row["time_taken_seconds"] is not none %}
+                            {{ "%.2f"|format(row["time_taken_seconds"]) }} sec
+                        {% else %}
+                            —
+                        {% endif %}
+                    </td>
+
+                    <td>{{ row["errors"] or 0 }}</td>
+
+                    <td>{{ row["tested_at"] }}</td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+        {% else %}
+
+        <div class="ai-empty">
+            No validation sessions are available yet.
+            Test a game first from the Validation Center.
+        </div>
+
+        {% endif %}
+
+    </section>
+
+
+    <!-- SAFETY -->
+
+    <section class="ai-card">
+
+        <h2>🛡️ Validation Boundary</h2>
+
+        <p>
+            This centre validates the NER-Care software and data-analysis
+            pipeline. It does not validate medical diagnosis, clinical
+            accuracy, or replace professional healthcare judgement.
+        </p>
+
+        <div class="ai-actions">
+
+            <a class="ai-action ai-primary"
+               href="{{ url_for('caregiver_validation_analysis', caregiver_id=caregiver['id']) }}">
+                📊 Validation Analysis
+            </a>
+
+            <a class="ai-action ai-secondary"
+               href="{{ url_for('caregiver_game_validation', caregiver_id=caregiver['id']) }}">
+                ← Validation Center
+            </a>
+
+        </div>
+
+    </section>
+
+</div>
+
+
+<script>
+
+async function loadAIValidation() {
+
+    const caregiverId = {{ caregiver["id"] }};
+
+    const endpoint =
+        `/api/caregiver/${caregiverId}/game-validation/ai-analysis`;
+
+    try {
+
+        const response = await fetch(endpoint);
+
+        const data = await response.json();
+
+        if (!response.ok || data.status !== "ok") {
+            throw new Error(data.message || "AI validation failed.");
+        }
+
+
+        if (!data.data_available) {
+
+            document.getElementById("aiRecommendation").textContent =
+                data.message;
+
+            return;
+        }
+
+
+        const summary = data.summary;
+        const ai = data.ai_validation;
+        const domains = data.cognitive_domains || data.domains || {};
+        const evidence = data.explainable_evidence || data.explainable_insights || [];
+
+        document.getElementById("aiSignalReason").textContent =
+            ai.signal_reason || "No additional explanation available.";
+
+        const evidenceList =
+            document.getElementById("aiEvidenceList");
+
+        evidenceList.innerHTML = "";
+
+        (data.explainable_insights || []).forEach(insight => {
+            const item = document.createElement("div");
+            item.className = "ai-evidence-item";
+            item.textContent = "✓ " + (
+                insight.text ||
+                insight.message ||
+                insight.insight ||
+                insight.description ||
+                JSON.stringify(insight)
+            );
+            evidenceList.appendChild(item);
+        });
+
+
+        // --------------------------------------------------------
+        // SUMMARY
+        // --------------------------------------------------------
+
+        document.getElementById("aiSessions").textContent =
+            summary.sessions;
+
+        document.getElementById("aiAccuracy").textContent =
+            summary.average_accuracy + "%";
+
+        document.getElementById("aiResponse").textContent =
+            summary.average_response_time !== null
+                ? summary.average_response_time + " sec"
+                : "—";
+        const confidenceValue =
+            typeof ai.confidence === "object"
+                ? (
+                    ai.confidence.label ||
+                    ai.confidence.level ||
+                    ai.confidence.status ||
+                    "AVAILABLE"
+                  )
+                : ai.confidence;
+        document.getElementById("aiConfidence").textContent =
+            confidenceValue;
+
+
+        // --------------------------------------------------------
+        // DATA CAPTURE
+        // --------------------------------------------------------
+
+        document.getElementById("captureStatus").textContent =
+            "✓ DATA CAPTURE VERIFIED";
+
+        document.getElementById("captureResult").textContent =
+            `${summary.sessions} session(s), ${summary.total_errors} errors and ${summary.total_hints} hints recorded.`;
+
+
+        // --------------------------------------------------------
+        // COGNITIVE MAPPING
+        // --------------------------------------------------------
+
+        const domainNames = Object.keys(domains);
+
+        if (domainNames.length > 0) {
+
+            document.getElementById("mappingStatus").textContent =
+                "✓ DOMAIN MAPPING VERIFIED";
+
+            document.getElementById("mappingResult").textContent =
+                domainNames.join(", ");
+
+        } else {
+
+            document.getElementById("mappingStatus").textContent =
+                "⚠ NO DOMAIN DATA";
+
+            document.getElementById("mappingResult").textContent =
+                "No cognitive-domain mapping was recorded.";
+
+        }
+
+
+        // --------------------------------------------------------
+        // PERFORMANCE SIGNAL
+        // --------------------------------------------------------
+
+        document.getElementById("signalStatus").textContent =
+            "✓ SIGNAL GENERATED";
+
+        document.getElementById("signalResult").textContent =
+            ai.performance_signal;
+
+
+        // --------------------------------------------------------
+        // EXPLAINABLE INSIGHT
+        // --------------------------------------------------------
+
+        document.getElementById("insightStatus").textContent =
+            "✓ EVIDENCE AVAILABLE";
+
+        document.getElementById("insightResult").innerHTML =
+            evidence.map(item =>
+                typeof item === "object"
+                    ? (
+                        item.text ||
+                        item.message ||
+                        item.insight ||
+                        item.description ||
+                        JSON.stringify(item)
+                      )
+                    : item
+            ).join("<br>");
+
+
+        // --------------------------------------------------------
+        // RECOMMENDATION
+        // --------------------------------------------------------
+
+        document.getElementById("aiRecommendation").innerHTML =
+            `<strong>AI Validation Signal:</strong> ${ai.performance_signal}<br><br>
+             <strong>Confidence:</strong> ${confidenceValue}<br><br>
+             <strong>Recommendation:</strong> Continue validation with additional sessions to strengthen the AI evidence base.`;
+
+    } catch (error) {
+
+        console.error(error);
+
+        document.getElementById("aiRecommendation").textContent =
+            "Unable to run AI validation analysis: " + error.message;
+
+    }
+
+}
+
+
+loadAIValidation();
+
+</script>
+
+{% endblock %}

@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block title %}Validation Analysis · NER-Care{% endblock %}
+
+{% block content %}
+<style>
+.validation-analysis{max-width:1080px;margin:0 auto;padding:8px 0 28px}
+.va-hero{padding:24px 27px;border:1px solid #dfe8f2;border-radius:22px;background:linear-gradient(135deg,#f8fbff,#f4f0ff);box-shadow:0 10px 28px rgba(30,65,90,.08)}
+.va-badge{display:inline-block;padding:7px 11px;border-radius:999px;background:#efe7ff;color:#6741aa;font-size:10px;font-weight:900;letter-spacing:1.1px}
+.va-hero h1{margin:11px 0 5px;color:#153452;font-size:clamp(27px,4vw,39px)}
+.va-hero p{margin:0;max-width:790px;color:#60758b;font-size:13px;line-height:1.55}
+.va-back{display:inline-block;margin-top:14px;padding:8px 12px;border-radius:9px;background:#1769aa;color:#fff;text-decoration:none;font-size:11px;font-weight:850;transition:.2s}
+.va-back:hover{transform:scale(1.04);box-shadow:0 7px 17px rgba(23,105,170,.2)}
+.va-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin:14px 0}
+.va-stat{padding:15px 16px;border:1px solid #e1e9f1;border-radius:15px;background:#fff;box-shadow:0 7px 20px rgba(30,65,90,.05)}
+.va-stat span{display:block;color:#7a8b9d;font-size:9px;font-weight:900;letter-spacing:.75px;text-transform:uppercase}
+.va-stat strong{display:block;margin-top:5px;color:#153452;font-size:23px}
+.va-section{margin-top:15px;padding:18px;border:1px solid #e1e9f1;border-radius:17px;background:#fff;box-shadow:0 7px 20px rgba(30,65,90,.05)}
+.va-section h2{margin:0 0 12px;color:#153452;font-size:17px}
+.va-table-wrap{overflow-x:auto}
+.va-table{width:100%;border-collapse:collapse;min-width:650px}
+.va-table th{padding:9px 8px;text-align:left;color:#7a8a9b;background:#f7f9fc;font-size:9px;font-weight:900;letter-spacing:.55px;text-transform:uppercase}
+.va-table td{padding:10px 8px;border-top:1px solid #edf1f5;color:#50667a;font-size:11px}
+.va-table td:first-child{color:#173a58;font-weight:800}
+.va-status{display:inline-block;padding:4px 7px;border-radius:999px;background:#eaf7ef;color:#198754;font-size:9px;font-weight:900}
+.va-empty{padding:20px;text-align:center;color:#7a8998;font-size:11px}
+.va-note{margin-top:14px;padding:12px 14px;border-radius:12px;background:#f7f9fc;color:#6a7c8d;font-size:10.5px;line-height:1.5}
+@media(max-width:820px){.va-stats{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.va-stats{grid-template-columns:1fr 1fr}.va-hero{padding:20px}.va-section{padding:14px}}
+</style>
+
+<div class="validation-analysis">
+
+<section class="va-hero">
+<span class="va-badge">CAREGIVER / DOCTOR VALIDATION</span>
+<h1>📊 Validation Analysis</h1>
+<p>Review the performance captured during caregiver testing. This dashboard uses isolated validation sessions only and does not read from or modify real patient game history.</p>
+<a class="va-back" href="{{ url_for('caregiver_game_validation', caregiver_id=caregiver['id']) }}">← Back to Validation Center</a>
+</section>
+
+<section class="va-stats">
+<div class="va-stat"><span>Total Sessions</span><strong>{{ summary['total_sessions'] or 0 }}</strong></div>
+<div class="va-stat"><span>Games Tested</span><strong>{{ summary['games_tested'] or 0 }}/4</strong></div>
+<div class="va-stat"><span>Average Accuracy</span><strong>{{ "%.1f"|format(summary['avg_accuracy'] or 0) }}%</strong></div>
+<div class="va-stat"><span>Average Response</span><strong>{{ "%.1f"|format(summary['avg_time'] or 0) }}s</strong></div>
+</section>
+
+<section class="va-section">
+<h2>🎮 Game-wise Validation Performance</h2>
+{% if game_rows %}
+<div class="va-table-wrap">
+<table class="va-table">
+<thead><tr><th>Game</th><th>Sessions</th><th>Avg Score</th><th>Avg Accuracy</th><th>Avg Time</th><th>Errors</th></tr></thead>
+<tbody>
+{% for row in game_rows %}
+<tr>
+<td>{{ row['game_name'].replace('_',' ').title() }}</td>
+<td>{{ row['sessions'] }}</td>
+<td>{{ "%.1f"|format(row['avg_score'] or 0) }}</td>
+<td>{{ "%.1f"|format(row['avg_accuracy'] or 0) }}%</td>
+<td>{{ "%.1f"|format(row['avg_time'] or 0) }}s</td>
+<td>{{ row['errors'] or 0 }}</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+{% else %}
+<div class="va-empty">No validation sessions have been recorded yet.</div>
+{% endif %}
+</section>
+
+<section class="va-section">
+<h2>🕘 Recent Validation Sessions</h2>
+{% if recent_rows %}
+<div class="va-table-wrap">
+<table class="va-table">
+<thead><tr><th>Game</th><th>Score</th><th>Accuracy</th><th>Time</th><th>Errors</th><th>Status</th></tr></thead>
+<tbody>
+{% for row in recent_rows %}
+<tr>
+<td>{{ row['game_name'].replace('_',' ').title() }}</td>
+<td>{{ "%.1f"|format(row['score'] or 0) }} / {{ "%.1f"|format(row['max_score'] or 0) }}</td>
+<td>{{ "%.1f"|format(row['accuracy'] or 0) }}%</td>
+<td>{{ "%.1f"|format(row['time_taken_seconds'] or 0) }}s</td>
+<td>{{ row['errors'] or 0 }}</td>
+<td><span class="va-status">{{ row['completion_status'] or 'completed' }}</span></td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+{% else %}
+<div class="va-empty">No recent validation sessions available.</div>
+{% endif %}
+</section>
+
+<div class="va-note"><strong>Validation boundary:</strong> This page validates software and data-pipeline behaviour using sandbox sessions. It is not a medical diagnostic or clinical validity assessment.</div>
+
+</div>
+{% endblock %}
