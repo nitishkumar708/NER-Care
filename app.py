@@ -827,7 +827,7 @@ def get_patient_ai_alert(patient_id):
 
     conn.close()
 
-    if len(rows) < 3:
+    if len(rows) < 4:  # need 3 recent + at least 1 earlier session
         return {
             "has_alert": False,
             "status": "INSUFFICIENT DATA",
